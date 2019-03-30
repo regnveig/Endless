@@ -4,12 +4,18 @@
 #include <QObject>
 #include <QRunnable>
 #include <QTimerEvent>
+#include <QtMath>
+#include <limits>
 
 const auto  SUNTIME_INTERVAL    = 20u,
             SUNDAY_INTERVAL     = 1000u,
             MOONTIME_INTERVAL   = 10u,
             MOONDAY_INTERVAL    = 50u,
-            WEATHER_INTERVAL    = 1000u; // sec
+            WEATHER_INTERVAL    = 1000u, // sec
+            SUN_DEVIATION_COE   = 4096u,
+            SUN_AMPLITUDE       = 2200u,
+            MOON_DEVIATION_COE  = 0u,
+            MOON_AMPLITUDE      = 5500u;
 
 enum class weather_type {
 
@@ -22,12 +28,17 @@ enum class weather_type {
 
 };
 
+struct polar {
+
+    quint16         azimuth,
+                    zenith;
+};
+
 struct weather {
 
     weather_type    type;
     int             id;
     quint16         time_sec;
-
 };
 
 struct skylight {
@@ -36,7 +47,6 @@ struct skylight {
                     day_id;
     quint16         time,
                     day;
-
 };
 
 class World : public QObject {
@@ -45,15 +55,11 @@ class World : public QObject {
 
 public:
 
-    explicit World(QObject *parent);
+    explicit World(QObject *parent, skylight newSun, skylight newMoon, weather newWeather);
     ~World() override;
 
 signals:
 
-    void NewSunTime(quint16);
-    void NewMoonTime(quint16);
-    void NewSunDay(quint16);
-    void NewMoonDay(quint16);
     void NewWeather(weather_type);
 
 public slots:
@@ -66,6 +72,8 @@ private:
     skylight    *Sun,
                 *Moon;
     weather     *Weather;
+
+    polar toPolar(skylight *SkyLight, quint16 Deviation, quint16 Amplitude);
 
 protected:
 

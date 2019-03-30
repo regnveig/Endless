@@ -1,6 +1,9 @@
 #include "world.h"
 
-World::World(QObject *parent) : QObject(parent) {
+World::World(QObject *parent, skylight newSun, skylight newMoon, weather newWeather) : QObject(parent),
+    Sun(new skylight(newSun)),
+    Moon(new skylight(newMoon)),
+    Weather(new weather(newWeather)) {
 
     World::Play();
 
@@ -61,4 +64,9 @@ void World::timerEvent(QTimerEvent *event) {
     }
 
 
+}
+
+polar World::toPolar(skylight *SkyLight, quint16 Deviation, quint16 Amplitude) {
+    quint16 newZenith = static_cast<quint16>(Amplitude * qSin((SkyLight->day) / std::numeric_limits<quint64>::max() * (2 * M_PI)) + Deviation);
+    return {SkyLight->time, newZenith};
 }
