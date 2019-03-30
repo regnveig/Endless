@@ -2,20 +2,21 @@
 #define WORLD_H
 
 #include <QObject>
-#include <QRunnable>
 #include <QTimerEvent>
 #include <QtMath>
 #include <limits>
 
-const auto  SUNTIME_INTERVAL    = 20u,
-            SUNDAY_INTERVAL     = 1000u,
+const auto  SUNTIME_INTERVAL    = 20u,      // сутки длятся 22 минуты.
+            SUNDAY_INTERVAL     = 540u,     // год длится 9,8 часов, сезон длится около 2,5 часов (~7 игровых дней).
             MOONTIME_INTERVAL   = 10u,
             MOONDAY_INTERVAL    = 50u,
-            WEATHER_INTERVAL    = 1000u, // sec
             SUN_DEVIATION_COE   = 4096u,
             SUN_AMPLITUDE       = 2200u,
             MOON_DEVIATION_COE  = 0u,
-            MOON_AMPLITUDE      = 5500u;
+            MOON_AMPLITUDE      = 5500u,
+            SUNMOON_COE         = 500u;     // Отношение расстояний до луны и солнца. Нужно для правильного определения фазы
+
+const quint16 QUINT16_MAX       = std::numeric_limits<quint16>::max();
 
 enum class weather_type {
 
@@ -25,13 +26,17 @@ enum class weather_type {
     Storm,
     Snow,
     Blizzard
-
 };
 
 struct polar {
 
-    quint16         azimuth,
-                    zenith;
+    qreal           azimuth,
+                    zenith; // in rad
+};
+
+struct cartesius {
+
+    qreal           x, y, z;
 };
 
 struct weather {
@@ -60,7 +65,9 @@ public:
 
 signals:
 
-    void NewWeather(weather_type);
+    void NewWeather(weather);
+    void NewSun(polar);
+    void NewMoon(polar);
 
 public slots:
 
@@ -73,7 +80,11 @@ private:
                 *Moon;
     weather     *Weather;
 
-    polar toPolar(skylight *SkyLight, quint16 Deviation, quint16 Amplitude);
+    qreal QUIntToRad(quint16 num) { return (num * 2 * M_PI / QUINT16_MAX); }
+
+    polar PolarSun();
+    polar PolarMoon();
+    qreal LunarPhase();
 
 protected:
 
