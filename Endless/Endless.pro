@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT       += core gui widgets opengl
 
 TARGET = Endless
 TEMPLATE = app
@@ -17,15 +17,14 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
-    world.cpp
+    world.cpp \
+    gui_opengl.cpp
 
 HEADERS += \
-        mainwindow.h \
-    world.h
+    world.h \
+    gui_opengl.h
 
-FORMS += \
-        mainwindow.ui
+FORMS +=
 
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
