@@ -24,7 +24,6 @@ void GUI_OpenGL::resizeGL(int nWidth, int nHeight) {
     glLoadIdentity();
     glViewport(0, 0, GLint(nWidth), GLint(nHeight));
 
-
     currentWidth = nWidth;
     currentHeight = nHeight;
 }
@@ -48,39 +47,36 @@ void GUI_OpenGL::paintGL() {
    Sky::DoMoon(-0.6f, -0.6f, 0.3f, 0.0, 0.0);
    Sky::DoStar(0, -0.7f, 0.03f);
    Sky::DoStar(0.7f, 0, 0.1f, 0.03f, 6);
-
 }
 
-void GUI_OpenGL::mousePressEvent(QMouseEvent *event)
-{
+void GUI_OpenGL::mousePressEvent(QMouseEvent *event) {
+
     pressPosition = event->pos();
-
 }
 
-void GUI_OpenGL::mouseMoveEvent(QMouseEvent *event)
-{
+void GUI_OpenGL::mouseMoveEvent(QMouseEvent *event) {
+
     xAxisRotation += (180 * (GLfloat(event->y()) - GLfloat(pressPosition.y()))) / (currentHeight);
     yAxisRotation += (180 * (GLfloat(event->x()) - GLfloat(pressPosition.x()))) / (currentWidth);
-
     pressPosition = event->pos();
-
     this->update();
-
 }
 
 void GUI_OpenGL::Sky::SkyBox() {
 
-    GLfloat cz = 3.0f;
+    // GLfloat sky_blue[] = {0.2f, 0.48f, 0.78f};
+    // GLfloat hell[] = {0.88f, 0.37f, 0.07f};
+    GLfloat cz = 5.0f;
 
     GLfloat cubeColorArray[8][3] = {
-        {0.0f, 0.0f, 1.0f},             // Sky
-        {1.0f, 0.0f, 0.0f},
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f},             // Sky
-        {0.0f, 0.0f, 1.0f},             // Sky
-        {1.0f, 0.0f, 0.0f},
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f}              // Sky
+        {0.2f, 0.48f, 0.78f},             // Sky
+        {0.88f, 0.37f, 0.07f},
+        {0.88f, 0.37f, 0.07f},
+        {0.2f, 0.48f, 0.78f},             // Sky
+        {0.2f, 0.48f, 0.78f},             // Sky
+        {0.88f, 0.37f, 0.07f},
+        {0.88f, 0.37f, 0.07f},
+        {0.2f, 0.48f, 0.78f}              // Sky
     };
 
     // Вот это лучше не трогать. Это древняя магия и она работает
@@ -114,13 +110,12 @@ void GUI_OpenGL::Sky::SkyBox() {
     // Типа земля
 
     glBegin     (GL_QUADS);
-    glColor3f  (0.0f, 1.0f, 0.0f);
-    glVertex3f  (3, -0.5, 3);
-    glVertex3f  (3, -0.5, -3);
-    glVertex3f  (-3, -0.5, -3);
-    glVertex3f  (-3, -0.5, 3);
+    glColor3f  (0.14f, 0.49f, 0.18f);
+    glVertex3f  (cz, -0.5, cz);
+    glVertex3f  (cz, -0.5, -cz);
+    glVertex3f  (-cz, -0.5, -cz);
+    glVertex3f  (-cz, -0.5, cz);
     glEnd       ();
-
 }
 
 void GUI_OpenGL::Sky::DoSun(GLfloat X, GLfloat Y, GLfloat Radius) {
