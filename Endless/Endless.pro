@@ -13,7 +13,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 # DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
-CONFIG += c++11
+CONFIG += c++17 c++11
 
 SOURCES += \
         main.cpp \
@@ -23,8 +23,6 @@ SOURCES += \
 HEADERS += \
     world.h \
     gui_opengl.h
-
-FORMS +=
 
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
