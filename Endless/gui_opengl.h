@@ -3,18 +3,22 @@
 
 #include <QtGui>
 #include <QWidget>
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
-class GUI_OpenGL : public QGLWidget {
+class GUI_OpenGL : public QOpenGLWidget {
 public:
 
     GUI_OpenGL(QWidget *parent = nullptr);
 
 protected:
 
-   void initializeGL();
-   void resizeGL(int nWidth, int nHeight);
-   void paintGL();
+   void initializeGL() override;
+   void resizeGL(int nWidth, int nHeight) override;
+   void paintGL() override;
+
+private:
+
+   void DoSun(GLfloat sky_color[], GLfloat X, GLfloat Y, GLfloat Radius);
 };
 
 #endif // GUI_OPENGL_H
