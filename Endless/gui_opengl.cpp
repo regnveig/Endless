@@ -2,6 +2,7 @@
 
 GUI_OpenGL::GUI_OpenGL(QWidget *parent) : QOpenGLWidget(parent) {
 
+    xAxisRotation = yAxisRotation = 0;
     resize(600,600);
 }
 
@@ -12,7 +13,8 @@ void GUI_OpenGL::initializeGL() {
    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
    glEnable(GL_BLEND);
    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
+   glEnableClientState(GL_VERTEX_ARRAY);
+   glEnableClientState(GL_COLOR_ARRAY);
 }
 
 void GUI_OpenGL::resizeGL(int nWidth, int nHeight) {
@@ -20,6 +22,11 @@ void GUI_OpenGL::resizeGL(int nWidth, int nHeight) {
     glViewport(0, 0, nHeight, nHeight);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    glViewport(0, 0, GLint(nWidth), GLint(nHeight));
+
+
+    currentWidth = nWidth;
+    currentHeight = nHeight;
 }
 
 void GUI_OpenGL::paintGL() {
@@ -29,13 +36,96 @@ void GUI_OpenGL::paintGL() {
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
-   DoMoon(0, 0, 0.2f, 0.0);
+   glOrtho(-0.5, 1.5, -0.5, 1.5, -10.0, 10.0);
+   glRotatef(yAxisRotation, 0.0, 1.0, 0.0);
+   glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
+
+   // Sky test screen
+
+   Sky::SkyBox();
+   Sky::DoSunCorona(0, 0, 1.0);
+   Sky::DoSun(0, 0, 0.4f);
+   Sky::DoMoon(-0.6f, -0.6f, 0.3f, 0.0, 0.0);
+   Sky::DoStar(0, -0.7f, 0.03f);
+   Sky::DoStar(0.7f, 0, 0.1f, 0.03f, 6);
 
 }
 
-void GUI_OpenGL::DoSun(GLfloat X, GLfloat Y, GLfloat Radius) {
+void GUI_OpenGL::mousePressEvent(QMouseEvent *event)
+{
+    pressPosition = event->pos();
 
-    //VARIABLE
+}
+
+void GUI_OpenGL::mouseMoveEvent(QMouseEvent *event)
+{
+    xAxisRotation += (180 * (GLfloat(event->y()) - GLfloat(pressPosition.y()))) / (currentHeight);
+    yAxisRotation += (180 * (GLfloat(event->x()) - GLfloat(pressPosition.x()))) / (currentWidth);
+
+    pressPosition = event->pos();
+
+    this->update();
+
+}
+
+void GUI_OpenGL::Sky::SkyBox() {
+
+    GLfloat cz = 3.0f;
+
+    GLfloat cubeColorArray[8][3] = {
+        {0.0f, 0.0f, 1.0f},             // Sky
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f},             // Sky
+        {0.0f, 0.0f, 1.0f},             // Sky
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f}              // Sky
+    };
+
+    // Вот это лучше не трогать. Это древняя магия и она работает
+
+    GLfloat cubeVertexArray[8][3] = {
+        { cz,  cz, -cz},
+        { cz, -cz, -cz},
+        {-cz, -cz, -cz},
+        {-cz,  cz, -cz},
+        { cz,  cz,  cz},
+        { cz, -cz,  cz},
+        {-cz, -cz,  cz},
+        {-cz,  cz,  cz}
+    };
+
+    GLubyte cubeIndexArray[6][4] = {
+        {0, 3, 2, 1},
+        {0, 1, 5, 4},
+        {7, 4, 5, 6},
+        {3, 7, 6, 2},
+        {1, 2, 6, 5},
+        {0, 4, 7, 3}
+    };
+
+    // Магия закончилась
+
+    glVertexPointer(3, GL_FLOAT, 0, cubeVertexArray);
+    glColorPointer(3, GL_FLOAT, 0, cubeColorArray);
+    glDrawElements(GL_QUADS, 24, GL_UNSIGNED_BYTE, cubeIndexArray);
+
+    // Типа земля
+
+    glBegin     (GL_QUADS);
+    glColor3f  (0.0f, 1.0f, 0.0f);
+    glVertex3f  (3, -0.5, 3);
+    glVertex3f  (3, -0.5, -3);
+    glVertex3f  (-3, -0.5, -3);
+    glVertex3f  (-3, -0.5, 3);
+    glEnd       ();
+
+}
+
+void GUI_OpenGL::Sky::DoSun(GLfloat X, GLfloat Y, GLfloat Radius) {
+
+    // VARIABLE
 
     GLfloat light_color[]       = {1.0f, 1.0f, 1.0f};
     GLfloat sun_edge_color[]    = {0.94f, 0.93f, 0.57f};
@@ -82,14 +172,14 @@ void GUI_OpenGL::DoSun(GLfloat X, GLfloat Y, GLfloat Radius) {
     glEnd       ();
 }
 
-void GUI_OpenGL::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, qreal Phase) {
+void GUI_OpenGL::Sky::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, qreal Phase, qreal SunDirection) {
 
     // VARIABLE
 
     GLfloat moon_edge_color[]   = {0.25f, 0.2f, 0.2f};
     GLfloat moon_dot_color[]   = {0.7f, 0.65f, 0.65f};
     GLfloat moon_color[]        = {0.97f, 0.95f, 0.95f};
-    GLfloat moon_shadow_color[]   = {0.15f, 0.1f, 0.1f, 0.8f};
+    GLfloat moon_shadow_color[]   = {0.15f, 0.1f, 0.1f, 0.8f}; // использовать текущий цвет неба?
 
     const GLfloat cx            = GLfloat(qSin(M_PI/3));
     const GLfloat cy            = GLfloat(qCos(M_PI/3));
@@ -184,7 +274,48 @@ void GUI_OpenGL::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, qreal Phase) {
     glEnd();
 }
 
-void GUI_OpenGL::DoSunCorona(GLfloat X, GLfloat Y, GLfloat Radius) {
+void GUI_OpenGL::Sky::DoStar(GLfloat X, GLfloat Y, GLfloat Radius) {
+
+    // VARIABLE
+
+    GLfloat star_color[]       = {1.0f, 1.0f, 1.0f};
+
+    // PRIMITIVE
+
+    glBegin     (GL_QUADS);
+    glColor3fv  (star_color);
+    glVertex2f  (X, Y + Radius);
+    glVertex2f  (X - Radius, Y);
+    glVertex2f  (X, Y - Radius);
+    glVertex2f  (X + Radius, Y);
+    glEnd       ();
+}
+
+void GUI_OpenGL::Sky::DoStar(GLfloat X, GLfloat Y, GLfloat Radius, GLfloat Inner_Radius, quint8 Ray_num) {
+
+    // VARIABLE
+
+    GLfloat star_color[]        = {1.0f, 1.0f, 1.0f};
+    qreal st                    = M_PI * 2 / Ray_num;
+
+    // PRIMITIVE
+
+    for (quint8 i = 0; i < Ray_num; i++) {
+
+        glBegin     (GL_QUADS);
+        glColor3fv  (star_color);
+        glVertex2f  (X + GLfloat(qSin((i + 1) * st)) * Inner_Radius,
+                     Y + GLfloat(qCos((i + 1) * st)) * Inner_Radius);
+        glVertex2f  (X + GLfloat(qSin((i + 0.5) * st)) * Radius,
+                     Y + GLfloat(qCos((i + 0.5) * st)) * Radius);
+        glVertex2f  (X + GLfloat(qSin(i * st)) * Inner_Radius,
+                     Y + GLfloat(qCos(i * st)) * Inner_Radius);
+        glVertex2f  (X, Y);
+        glEnd       ();
+    }
+}
+
+void GUI_OpenGL::Sky::DoSunCorona(GLfloat X, GLfloat Y, GLfloat Radius) {
 
     // VARIABLE
 
