@@ -19,6 +19,7 @@ protected:
 private:
 
    void DoSun(GLfloat sky_color[], GLfloat X, GLfloat Y, GLfloat Radius);
+   void DoMoon(GLfloat sky_color[], GLfloat X, GLfloat Y, GLfloat Radius, qreal Phase);
 };
 
 #endif // GUI_OPENGL_H
