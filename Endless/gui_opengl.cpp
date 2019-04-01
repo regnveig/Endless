@@ -3,7 +3,7 @@
 GUI_OpenGL::GUI_OpenGL(QWidget *parent) : QOpenGLWidget(parent) {
 
     xAxisRotation = yAxisRotation = 0;
-    resize(600,600);
+    resize(800,800);
 }
 
 void GUI_OpenGL::initializeGL() {
@@ -42,11 +42,11 @@ void GUI_OpenGL::paintGL() {
    // Sky test screen
 
    Sky::SkyBox();
-   Sky::DoSunCorona(0, 0, 1.0);
+   //Sky::DoSunCorona(0, 0, 1.0);
    Sky::DoSun(0, 0, 0.4f);
-   Sky::DoMoon(-0.6f, -0.6f, 0.3f, 0.0, 0.0);
-   Sky::DoStar(0, -0.7f, 0.03f);
-   Sky::DoStar(0.7f, 0, 0.1f, 0.03f, 6);
+   //Sky::DoMoon(-0.6f, -0.6f, 0.3f, 0.0, 0.0);
+   //Sky::DoStar(0, -0.7f, 0.03f);
+   //Sky::DoStar(0.7f, 0, 0.1f, 0.03f, 6);
 }
 
 void GUI_OpenGL::mousePressEvent(QMouseEvent *event) {

@@ -58,10 +58,9 @@ void World::timerEvent(QTimerEvent *event) {
 polar World::PolarSun() {
 
     qreal new_azimuth = QUIntToRad(SUN_DEVIATION_COE + quint16(SUN_AMPLITUDE * qSin(QUIntToRad(Sun->day))));
-    qreal new_zenith = QUIntToRad(Sun->time);
+    qreal beta = QUIntToRad(Sun->time);
 
-    // Доработать алгоритм, чтобы зимой дни были короче
-
+    qreal new_zenith = beta + qAsin((1 + qSin(QUIntToRad(Sun->day))) / 2 * SUNKEN_COE * qSin(beta));
     return {new_azimuth, new_zenith};
 }
 
@@ -93,5 +92,4 @@ qreal World::LunarPhase() {
     qreal length = qSqrt(qPow(d_sun.x, 2) + qPow(d_sun.y, 2) + qPow(d_sun.z, 2));
 
     return qAcos((0 - (c_moon.x * d_sun.x) - (c_moon.y * d_sun.y) - (c_moon.z * d_sun.z)) / length);
-
 }

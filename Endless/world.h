@@ -18,6 +18,8 @@ const auto  SUNTIME_INTERVAL    = 20u,      // сутки длятся 22 мин
 
 const quint16 QUINT16_MAX       = std::numeric_limits<quint16>::max();
 
+const auto SUNKEN_COE = 0.3;
+
 enum class weather_type {
 
     Clear,
@@ -28,16 +30,9 @@ enum class weather_type {
     Blizzard
 };
 
-struct polar {
+struct polar { qreal azimuth, zenith; };
 
-    qreal           azimuth,
-                    zenith; // in rad
-};
-
-struct cartesius {
-
-    qreal           x, y, z;
-};
+struct cartesius { qreal x, y, z; };
 
 struct weather {
 
