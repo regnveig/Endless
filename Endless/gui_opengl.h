@@ -8,12 +8,6 @@
 #include <QTimer>
 #include <QMouseEvent>
 
-enum class star_size {
-
-    Small,
-    Large
-};
-
 class GUI_OpenGL : public QOpenGLWidget {
 public:
 

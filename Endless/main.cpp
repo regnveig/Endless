@@ -1,4 +1,5 @@
 #include "gui_opengl.h"
+#include <sky.h>
 #include <QApplication>
 #include <QDebug>
 
