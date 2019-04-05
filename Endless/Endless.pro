@@ -17,12 +17,10 @@ CONFIG += c++17
 
 SOURCES += \
         main.cpp \
-    world.cpp \
     gui_opengl.cpp \
     sky.cpp
 
 HEADERS += \
-    world.h \
     gui_opengl.h \
     sky.h
 

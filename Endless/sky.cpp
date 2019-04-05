@@ -1,10 +1,11 @@
 #include "sky.h"
 
-Celestial::Celestial(Celestial *new_parent, QString new_name, celestial_const new_const, qreal new_angle) : parent(new_parent) {
+Celestial::Celestial(Celestial *new_parent, QString new_name, celestial_const new_const, qreal new_angle, qreal new_time) : parent(new_parent) {
 
-    *name = new_name; // проверка на уникальность?
+    *name = new_name;
     *c_const = new_const;
     *angle = Angle(new_angle);
+    *time = Angle(new_time);
     if (parent != nullptr) parent->AddChild(this);
 }
 
@@ -17,9 +18,13 @@ Celestial::~Celestial() {
     delete name; name = nullptr;
     delete c_const; c_const = nullptr;
     delete angle; angle = nullptr;
+    delete time; time = nullptr;
 };
 
 int Celestial::AddChild(Celestial *child) {
+
+    // Дополнительная проверка на кольца?
+
     for (auto item = 0; item < children->size(); item++)
         if (children->at(item) == child) return 1;
     children->append(child);
@@ -27,35 +32,29 @@ int Celestial::AddChild(Celestial *child) {
 }
 
 cartesian Celestial::getPosition() {
+
     if (parent == nullptr)
         return {0.0, 0.0, 0.0};
-    qreal x = qCos(*angle) * qCos(c_const->angle_ecliptic) * c_const->radius;
-    qreal y = qSin(*angle) * qCos(c_const->angle_ecliptic) * c_const->radius;
-    qreal z = qSin(*angle) * qSin(c_const->angle_ecliptic) * c_const->radius;
+    cartesian d = {qCos(*angle) * qCos(c_const->angle_ecliptic) * c_const->distance,
+                   qSin(*angle) * qCos(c_const->angle_ecliptic) * c_const->distance,
+                   qSin(*angle) * qSin(c_const->angle_ecliptic) * c_const->distance};
+
     cartesian ppos = parent->getPosition();
-    return {ppos.x + x, ppos.y + y, ppos.z + z};
+    return {ppos + d};
 }
 
-QString Celestial::getName() {
+QString Celestial::getName() { return *name; }
 
-    return *name;
-}
+qreal Celestial::getTime() { return *time; }
 
-qreal Celestial::getTime() {
-
-    return *time;
-}
+celestial_const Celestial::getCelestialConst() { return *c_const; }
 
 QList<Celestial *> Celestial::getFamily() {
+
     QList<Celestial *> family = *children;
     for (auto item = 0; item < children->size(); item++)
         family.append(children->at(item)->getFamily());
     return family;
-}
-
-celestial_const Celestial::getCelestialConst() {
-
-    return *c_const;
 }
 
 void Celestial::LoopFamily() {
@@ -74,7 +73,7 @@ qreal Celestial::Angle(qreal angle) {
     if (angle >= (2 * M_PI))
         return (angle - (qFloor(angle / (2 * M_PI)) * 2 * M_PI));
     if (angle < 0)
-        return (angle + (qFloor(qFabs(angle / (2 * M_PI))) * 2 * M_PI));
+        return (angle + (qCeil(qFabs(angle / (2 * M_PI))) * 2 * M_PI));
     return angle;
 }
 
@@ -82,10 +81,8 @@ qreal Celestial::Angle(qreal angle) {
 
 Spectator::Spectator(Celestial *new_ground, qreal new_latitude, qreal new_longitude) : ground(new_ground) {
 
-    // CHECK
-
-    *latitude = new_latitude;
-    *longitude = new_longitude;
+    *latitude = Celestial::Angle(new_latitude);
+    *longitude = Celestial::Angle(new_longitude);
 }
 
 Spectator::~Spectator() {
@@ -95,21 +92,21 @@ Spectator::~Spectator() {
     ground = nullptr;
 }
 
-void Spectator::setLatitude(qreal new_latitude) {
+void Spectator::setPlace(Celestial *new_ground, qreal new_latitude, qreal new_longitude) {
 
-    // CHECK
-
-    *latitude = new_latitude;
+    ground = new_ground;
+    *latitude = Celestial::Angle(new_latitude);
+    *longitude = Celestial::Angle(new_longitude);
 }
 
-void Spectator::setLongitude(qreal new_longitude) {
+cartesian Spectator::AxisRotate(cartesian vect, qreal angle) {
 
-    // CHECK
-
-    *longitude = new_longitude;
+    return { vect.x * qCos(angle) + vect.z * qSin(angle),
+             vect.y,
+            -vect.x * qSin(angle) + vect.z * qCos(angle)};
 }
 
-void Spectator::System(c_system *system) {
+c_system Spectator::System() {
 
     qreal al = Celestial::Angle(*longitude + ground->getTime());
     celestial_const c_const = ground->getCelestialConst();
@@ -118,25 +115,17 @@ void Spectator::System(c_system *system) {
                    qCos(*latitude) * qSin(al) * c_const.radius,
                    qSin(*latitude) * c_const.radius};
 
-    cartesian x = {qCos(*latitude - M_PI_4) * qCos(al) * c_const.radius,
-                   qCos(*latitude - M_PI_4) * qSin(al) * c_const.radius,
-                   qSin(*latitude - M_PI_4) * c_const.radius};
+    cartesian x = {qCos(*latitude - M_PI_2) * qCos(al) * c_const.radius,
+                   qCos(*latitude - M_PI_2) * qSin(al) * c_const.radius,
+                   qSin(*latitude - M_PI_2) * c_const.radius};
 
-    cartesian y = {qCos(al + M_PI_4) * c_const.radius,
-                   qSin(al + M_PI_4) * c_const.radius,
+    cartesian y = {qCos(al + M_PI_2) * c_const.radius,
+                   qSin(al + M_PI_2) * c_const.radius,
                    0};
 
-    system->axis_x = {x.x * qCos(c_const.angle_axis) + x.z * qSin(c_const.angle_axis),
-                      x.y,
-                      - x.x * qSin(c_const.angle_axis) + x.z * qCos(c_const.angle_axis)};
-
-    system->axis_y = {y.x * qCos(c_const.angle_axis) + y.z * qSin(c_const.angle_axis),
-                      y.y,
-                      - y.x * qSin(c_const.angle_axis) + y.z * qCos(c_const.angle_axis)};
-
-    system->axis_z = {z.x * qCos(c_const.angle_axis) + z.z * qSin(c_const.angle_axis),
-                      z.y,
-                      - z.x * qSin(c_const.angle_axis) + z.z * qCos(c_const.angle_axis)};
+    return {AxisRotate(x, c_const.angle_axis),
+            AxisRotate(y, c_const.angle_axis),
+            AxisRotate(z, c_const.angle_axis)};
 }
 
 // -------------------------------------------
@@ -151,4 +140,27 @@ Sky::~Sky() {
 
 void Sky::Loop() {
 
+    Sun->LoopFamily();
+
+    QList<celestial_data> list;
+
+    c_system System = Player->System();
+
+    cartesian Pos = (Player->getGround()->getPosition() + System.axis_z);
+    qreal AxisLength = Player->getGround()->getCelestialConst().radius;
+
+    QList<Celestial *> Family = Sun->getFamily();
+    Family.append(Sun);
+
+    for (auto item = 0; item < Family.size(); item++) {
+
+        QString new_name = Family.at(item)->getName();
+        cartesian new_coord = Family.at(item)->getPosition() - Pos;
+        qreal new_x1 = cartesian::scalar(new_coord, System.axis_x) / (new_coord.length() * AxisLength);
+        qreal new_y1 = cartesian::scalar(new_coord, System.axis_y) / (new_coord.length() * AxisLength);
+        qreal new_z1 = cartesian::scalar(new_coord, System.axis_z) / (new_coord.length() * AxisLength);
+        list.append({new_name, new_x1, new_y1, new_z1});
+    }
+
+    emit Data(list);
 }

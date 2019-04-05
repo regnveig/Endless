@@ -10,6 +10,7 @@
 struct celestial_data {
 
     QString name;
+    qreal x1, y1, z1;
 };
 
 struct celestial_const {
@@ -22,26 +23,22 @@ struct celestial_const {
             rotation_speed;    // Day-night
 };
 
-struct spheric {
-
-    qreal azimuth,
-    zenith;
-};
-
 struct cartesian {
+
+    const cartesian operator+(const cartesian& rhs) const { return {x + rhs.x, y + rhs.y, z + rhs.z}; }
+    const cartesian operator-(const cartesian& rhs) const { return {x - rhs.x, y - rhs.y, z - rhs.z}; }
+    qreal length() const { return (qSqrt(qPow(x, 2) + qPow(y, 2) + qPow(z, 2))); }
+    static qreal scalar(cartesian v1, cartesian v2) { return ((v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)); }
 
     qreal x, y, z;
 };
 
-struct c_system {
-
-    cartesian axis_x, axis_y, axis_z;
-};
+struct c_system { cartesian axis_x, axis_y, axis_z; };
 
 class Celestial {
 public:
 
-    explicit Celestial(Celestial *parent, QString new_name, celestial_const new_const, qreal new_angle);
+    explicit Celestial(Celestial *parent, QString new_name, celestial_const new_const, qreal new_angle, qreal new_time);
     ~Celestial();
     int AddChild(Celestial *child);
     cartesian getPosition();
@@ -50,7 +47,6 @@ public:
     celestial_const getCelestialConst();
     QList<Celestial *> getFamily();
     void LoopFamily();
-
     static qreal Angle(qreal angle);
 
 private:
@@ -59,7 +55,6 @@ private:
     QList<Celestial *>  *children   = new QList<Celestial *>();
     QString             *name       = new QString();
     celestial_const     *c_const    = new celestial_const();
-
     qreal               *angle      = new qreal();
     qreal               *time       = new qreal();
 };
@@ -69,12 +64,13 @@ public:
 
     explicit Spectator(Celestial *new_ground, qreal new_latitude, qreal new_longitude);
     ~Spectator();
-
-    void setLatitude(qreal new_latitude);
-    void setLongitude(qreal new_longitude);
-    void System(c_system *system);
+    void setPlace(Celestial *new_ground, qreal new_latitude, qreal new_longitude);
+    Celestial * getGround() { return ground; }
+    c_system System();
 
 private:
+
+    cartesian AxisRotate(cartesian vect, qreal angle);
 
     Celestial   *ground;
     qreal       *latitude = new qreal(),
@@ -92,7 +88,7 @@ public:
 
 signals:
 
-    void Data(celestial_data);
+    void Data(QList<celestial_data>);
 
 public slots:
 
@@ -104,11 +100,36 @@ private:
     celestial_const * EarthConst = new celestial_const({25000.0, 0.0, 3.55e-06, 1.0, 0.4, 9.6e-05});
     celestial_const * MoonConst = new celestial_const({64.0, 0.5, 2.48e-05, 0.3, -0.4, 2.48e-05});
 
-    Celestial * Sun = new Celestial(nullptr, QString("sun"), *SunConst, 0.0);
-    Celestial * Earth = new Celestial(Sun, QString("earth"), *EarthConst, 0.0);
-    Celestial * Moon = new Celestial(Earth, QString("moon"), *MoonConst, 0.0);
+    Celestial * Sun = new Celestial(nullptr, QString("sun"), *SunConst, 0.0, 0.0);
+    Celestial * Earth = new Celestial(Sun, QString("earth"), *EarthConst, 3.71, -1);
+    Celestial * Moon = new Celestial(Earth, QString("moon"), *MoonConst, 0.0, 0.0);
 
     Spectator * Player = new Spectator(Earth, 0.3, 0.0);
+};
+
+class Getter : public QObject {
+
+    Q_OBJECT
+
+public:
+
+    explicit Getter(QObject *parent = nullptr) {}
+    virtual ~Getter() {}
+
+public slots:
+
+    void GetData(QList<celestial_data> data) {
+
+        for (auto item = 0; item < data.size(); item++) {
+            qDebug() << "name: " << qPrintable(data.at(item).name) <<
+                        "\nx1: " << qPrintable(QString::number(data.at(item).x1)) <<
+                        "\ny1: " << qPrintable(QString::number(data.at(item).y1)) <<
+                        "\nz1: " << qPrintable(QString::number(data.at(item).z1)) <<
+                        "\nco: " << qPrintable(QString::number(
+                                                   cartesian({data.at(item).x1, data.at(item).y1, data.at(item).z1}).length()
+                                                   ));
+        }
+    }
 };
 
 #endif // SKY_H
