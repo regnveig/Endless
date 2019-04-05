@@ -13,8 +13,8 @@
 struct celestial_data {
 
     QString name;
-    qreal x1, y1, z1;
-    qreal distance;
+    QVector3D vect1;
+    float distance;
     qreal angular_size;
 };
 

@@ -31,15 +31,15 @@ int Celestial::AddChild(Celestial *child) {
     return 0;
 }
 
-cartesian Celestial::getPosition() {
+QVector3D Celestial::getPosition() {
 
     if (parent == nullptr)
         return {0.0, 0.0, 0.0};
-    cartesian d = {qCos(*angle) * qCos(c_const->angle_ecliptic) * c_const->distance,
-                   qSin(*angle) * qCos(c_const->angle_ecliptic) * c_const->distance,
-                   qSin(*angle) * qSin(c_const->angle_ecliptic) * c_const->distance};
+    QVector3D d = QVector3D(float(qCos(*angle) * qCos(c_const->angle_ecliptic)) * c_const->distance,
+                   float(qSin(*angle) * qCos(c_const->angle_ecliptic)) * c_const->distance,
+                   float(qSin(*angle) * qSin(c_const->angle_ecliptic)) * c_const->distance);
 
-    cartesian ppos = parent->getPosition();
+    QVector3D ppos = parent->getPosition();
     return {ppos + d};
 }
 
@@ -99,11 +99,11 @@ void Spectator::setPlace(Celestial *new_ground, qreal new_latitude, qreal new_lo
     *longitude = Celestial::Angle(new_longitude);
 }
 
-cartesian Spectator::AxisRotate(cartesian vect, qreal angle) {
+QVector3D Spectator::AxisRotate(QVector3D vect, qreal angle) {
 
-    return { vect.x * qCos(angle) + vect.z * qSin(angle),
-             vect.y,
-            -vect.x * qSin(angle) + vect.z * qCos(angle)};
+    return QVector3D(vect.x() * float(qCos(angle)) + vect.z() * float(qSin(angle)),
+             vect.y(),
+            -vect.x() * float(qSin(angle)) + vect.z() * float(qCos(angle)));
 }
 
 c_system Spectator::System() {
@@ -111,17 +111,17 @@ c_system Spectator::System() {
     qreal al = Celestial::Angle(*longitude + ground->getTime());
     celestial_const c_const = ground->getCelestialConst();
 
-    cartesian z = {qCos(*latitude) * qCos(al) * c_const.radius,
-                   qCos(*latitude) * qSin(al) * c_const.radius,
-                   qSin(*latitude) * c_const.radius};
+    QVector3D z (float(qCos(*latitude) * qCos(al)) * c_const.radius,
+                 float(qCos(*latitude) * qSin(al)) * c_const.radius,
+                 float(qSin(*latitude)) * c_const.radius);
 
-    cartesian x = {qCos(*latitude - M_PI_2) * qCos(al) * c_const.radius,
-                   qCos(*latitude - M_PI_2) * qSin(al) * c_const.radius,
-                   qSin(*latitude - M_PI_2) * c_const.radius};
+    QVector3D x (float(qCos(*latitude - M_PI_2) * qCos(al)) * c_const.radius,
+                 float(qCos(*latitude - M_PI_2) * qSin(al)) * c_const.radius,
+                 float(qSin(*latitude - M_PI_2)) * c_const.radius);
 
-    cartesian y = {qCos(al + M_PI_2) * c_const.radius,
-                   qSin(al + M_PI_2) * c_const.radius,
-                   0};
+    QVector3D y (float(qCos(al + M_PI_2)) * c_const.radius,
+                 float(qSin(al + M_PI_2)) * c_const.radius,
+                 0.0f);
 
     return {AxisRotate(x, c_const.angle_axis),
             AxisRotate(y, c_const.angle_axis),
@@ -140,7 +140,7 @@ Sky::~Sky() {
     Pause();
 }
 
-void Sky::Play() { *Timer_ID = startTimer(20); }
+void Sky::Play() { *Timer_ID = startTimer(100); }
 
 void Sky::Pause() { killTimer(*Timer_ID); }
 
@@ -154,8 +154,8 @@ void Sky::Loop() {
 
     c_system System = Player->System();
 
-    cartesian Pos = (Player->getGround()->getPosition() + System.axis_z);
-    qreal AxisLength = Player->getGround()->getCelestialConst().radius;
+    QVector3D Pos = (Player->getGround()->getPosition() + System.axis_z);
+    float AxisLength = Player->getGround()->getCelestialConst().radius;
 
     QList<Celestial *> Family = Sun->getFamily();
     Family.append(Sun);
@@ -163,13 +163,14 @@ void Sky::Loop() {
     for (auto item = 0; item < Family.size(); item++) {
 
         QString new_name = Family.at(item)->getName();
-        cartesian new_coord = Family.at(item)->getPosition() - Pos;
-        qreal new_distance = new_coord.length();
-        qreal new_angular_size = 2 * qAtan(Family.at(item)->getCelestialConst().radius / (2 * new_distance));
-        qreal new_x1 = cartesian::scalar(new_coord, System.axis_x) / (new_distance * AxisLength);
-        qreal new_y1 = cartesian::scalar(new_coord, System.axis_y) / (new_distance * AxisLength);
-        qreal new_z1 = cartesian::scalar(new_coord, System.axis_z) / (new_distance * AxisLength);
-        list.append({new_name, new_x1, new_y1, new_z1, new_distance, new_angular_size});
+        QVector3D new_coord = Family.at(item)->getPosition() - Pos;
+        float new_distance = new_coord.length();
+        qreal new_angular_size = 2 * qAtan(qreal(Family.at(item)->getCelestialConst().radius / (2.0f * new_distance)));
+        QVector3D new_vect1 (QVector3D::dotProduct(new_coord, System.axis_x),
+                             QVector3D::dotProduct(new_coord, System.axis_y),
+                             QVector3D::dotProduct(new_coord, System.axis_z));
+        new_vect1 /= new_distance * AxisLength;
+        list.append({new_name, new_vect1, new_distance, new_angular_size});
     }
 
     emit Data(list);

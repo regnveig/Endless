@@ -5,25 +5,15 @@
 
 struct celestial_const {
 
-    qreal   distance,          // Distance from parent
-            angle_ecliptic,    // Angle from parent's ecliptic
-            angle_speed,       // Angle speed in rad per loop
-            radius,            // Radius of planet
-            angle_axis,        // Axis angle (to parent's ecliptic perpendicular)
-            rotation_speed;    // Day-night
+    float   distance,           // Distance from parent
+            radius;             // Radius of planet
+    qreal   angle_ecliptic,     // Angle from parent's ecliptic
+            angle_speed,        // Angle speed in rad per loop
+            angle_axis,         // Axis angle (to parent's ecliptic perpendicular)
+            rotation_speed;     // Day-night
 };
 
-struct cartesian {
-
-    const cartesian operator+(const cartesian& rhs) const { return {x + rhs.x, y + rhs.y, z + rhs.z}; }
-    const cartesian operator-(const cartesian& rhs) const { return {x - rhs.x, y - rhs.y, z - rhs.z}; }
-    qreal length() const { return (qSqrt(qPow(x, 2) + qPow(y, 2) + qPow(z, 2))); }
-    static qreal scalar(cartesian v1, cartesian v2) { return ((v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)); }
-
-    qreal x, y, z;
-};
-
-struct c_system { cartesian axis_x, axis_y, axis_z; };
+struct c_system { QVector3D axis_x, axis_y, axis_z; };
 
 class Celestial {
 public:
@@ -31,7 +21,7 @@ public:
     explicit Celestial(Celestial *parent, QString new_name, celestial_const new_const, qreal new_angle, qreal new_time);
     ~Celestial();
     int AddChild(Celestial *child);
-    cartesian getPosition();
+    QVector3D getPosition();
     QString getName();
     qreal getTime();
     celestial_const getCelestialConst();
@@ -45,8 +35,8 @@ private:
     QList<Celestial *>  *children   = new QList<Celestial *>();
     QString             *name       = new QString();
     celestial_const     *c_const    = new celestial_const();
-    qreal               *angle      = new qreal();
-    qreal               *time       = new qreal();
+    qreal               *angle      = new qreal(),
+                        *time       = new qreal();
 };
 
 class Spectator {
@@ -60,7 +50,7 @@ public:
 
 private:
 
-    cartesian AxisRotate(cartesian vect, qreal angle);
+    QVector3D AxisRotate(QVector3D vect, qreal angle);
 
     Celestial   *ground;
     qreal       *latitude = new qreal(),
@@ -95,12 +85,12 @@ private:
 
     int * Timer_ID = new int();
 
-    celestial_const * SunConst = new celestial_const({0.0, 0.0, 0.0, 100.0, 0.0, 0.0});
-    celestial_const * EarthConst = new celestial_const({25000.0, 0.0, 3.55e-06, 1.0, 0.4, 9.6e-05});
-    celestial_const * MoonConst = new celestial_const({64.0, 0.5, 2.48e-05, 0.3, -0.4, 2.48e-05});
+    celestial_const * SunConst = new celestial_const({0.0f, 100.0f, 0.0, 0.0, 0.0, 0.0});
+    celestial_const * EarthConst = new celestial_const({25000.0f, 1.0f, 0.0, 3.55e-06, 0.4, 9.6e-05});
+    celestial_const * MoonConst = new celestial_const({64.0f, 0.3f, 0.5, 2.48e-05, -0.4, 2.48e-05});
 
     Celestial * Sun = new Celestial(nullptr, QString("sun"), *SunConst, 0.0, 0.0);
-    Celestial * Earth = new Celestial(Sun, QString("earth"), *EarthConst, 3.71, -1);
+    Celestial * Earth = new Celestial(Sun, QString("earth"), *EarthConst, 3.71, -1.0);
     Celestial * Moon = new Celestial(Earth, QString("moon"), *MoonConst, 0.0, 0.0);
 
     Spectator * Player = new Spectator(Earth, 0.3, 0.0);
@@ -121,10 +111,10 @@ public slots:
 
         for (auto item = 0; item < data.size(); item++) {
             qDebug() << "\nname: " << qPrintable(data.at(item).name) <<
-                        "\nx1: " << qPrintable(QString::number(data.at(item).x1)) <<
-                        "\ny1: " << qPrintable(QString::number(data.at(item).y1)) <<
-                        "\nz1: " << qPrintable(QString::number(data.at(item).z1)) <<
-                        "\nS0: " << qPrintable(QString::number(data.at(item).distance)) <<
+                        "\nx1: " << qPrintable(QString::number(qreal(data.at(item).vect1.x()))) <<
+                        "\ny1: " << qPrintable(QString::number(qreal(data.at(item).vect1.y()))) <<
+                        "\nz1: " << qPrintable(QString::number(qreal(data.at(item).vect1.z()))) <<
+                        "\nS0: " << qPrintable(QString::number(qreal(data.at(item).distance))) <<
                         "\nas: " << qPrintable(QString::number(data.at(item).angular_size));
         }
     }
