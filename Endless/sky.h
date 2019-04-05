@@ -33,15 +33,21 @@ struct cartesian {
     qreal x, y, z;
 };
 
+struct c_system {
+
+    cartesian axis_x, axis_y, axis_z;
+};
+
 class Celestial {
 public:
 
-    Celestial(Celestial *parent, QString new_name, celestial_const new_const, qreal new_angle);
+    explicit Celestial(Celestial *parent, QString new_name, celestial_const new_const, qreal new_angle);
     ~Celestial();
     int AddChild(Celestial *child);
     cartesian getPosition();
     QString getName();
     qreal getTime();
+    celestial_const getCelestialConst();
     QList<Celestial *> getFamily();
     void LoopFamily();
 
@@ -58,11 +64,21 @@ private:
     qreal               *time       = new qreal();
 };
 
-struct spectator {
+class Spectator {
+public:
 
-    Celestial * ground;
-    qreal latitude,
-          longitude;
+    explicit Spectator(Celestial *new_ground, qreal new_latitude, qreal new_longitude);
+    ~Spectator();
+
+    void setLatitude(qreal new_latitude);
+    void setLongitude(qreal new_longitude);
+    void System(c_system *system);
+
+private:
+
+    Celestial   *ground;
+    qreal       *latitude = new qreal(),
+                *longitude = new qreal();
 };
 
 class Sky : public QObject {
@@ -84,8 +100,6 @@ public slots:
 
 private:
 
-    cartesian SpecVec(spectator * spec);
-
     celestial_const * SunConst = new celestial_const({0.0, 0.0, 0.0, 100.0, 0.0, 0.0});
     celestial_const * EarthConst = new celestial_const({25000.0, 0.0, 3.55e-06, 1.0, 0.4, 9.6e-05});
     celestial_const * MoonConst = new celestial_const({64.0, 0.5, 2.48e-05, 0.3, -0.4, 2.48e-05});
@@ -93,7 +107,8 @@ private:
     Celestial * Sun = new Celestial(nullptr, QString("sun"), *SunConst, 0.0);
     Celestial * Earth = new Celestial(Sun, QString("earth"), *EarthConst, 0.0);
     Celestial * Moon = new Celestial(Earth, QString("moon"), *MoonConst, 0.0);
-    spectator * Player = new spectator({Earth, 0.3, 0.0});
+
+    Spectator * Player = new Spectator(Earth, 0.3, 0.0);
 };
 
 #endif // SKY_H

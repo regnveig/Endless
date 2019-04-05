@@ -53,7 +53,13 @@ QList<Celestial *> Celestial::getFamily() {
     return family;
 }
 
+celestial_const Celestial::getCelestialConst() {
+
+    return *c_const;
+}
+
 void Celestial::LoopFamily() {
+
     for (auto item = 0; item < children->size(); item++)
         children->at(item)->LoopFamily();
 
@@ -74,6 +80,67 @@ qreal Celestial::Angle(qreal angle) {
 
 // -------------------------------------------
 
+Spectator::Spectator(Celestial *new_ground, qreal new_latitude, qreal new_longitude) : ground(new_ground) {
+
+    // CHECK
+
+    *latitude = new_latitude;
+    *longitude = new_longitude;
+}
+
+Spectator::~Spectator() {
+
+    delete latitude; latitude = nullptr;
+    delete longitude; longitude = nullptr;
+    ground = nullptr;
+}
+
+void Spectator::setLatitude(qreal new_latitude) {
+
+    // CHECK
+
+    *latitude = new_latitude;
+}
+
+void Spectator::setLongitude(qreal new_longitude) {
+
+    // CHECK
+
+    *longitude = new_longitude;
+}
+
+void Spectator::System(c_system *system) {
+
+    qreal al = Celestial::Angle(*longitude + ground->getTime());
+    celestial_const c_const = ground->getCelestialConst();
+
+    cartesian z = {qCos(*latitude) * qCos(al) * c_const.radius,
+                   qCos(*latitude) * qSin(al) * c_const.radius,
+                   qSin(*latitude) * c_const.radius};
+
+    cartesian x = {qCos(*latitude - M_PI_4) * qCos(al) * c_const.radius,
+                   qCos(*latitude - M_PI_4) * qSin(al) * c_const.radius,
+                   qSin(*latitude - M_PI_4) * c_const.radius};
+
+    cartesian y = {qCos(al + M_PI_4) * c_const.radius,
+                   qSin(al + M_PI_4) * c_const.radius,
+                   0};
+
+    system->axis_x = {x.x * qCos(c_const.angle_axis) + x.z * qSin(c_const.angle_axis),
+                      x.y,
+                      - x.x * qSin(c_const.angle_axis) + x.z * qCos(c_const.angle_axis)};
+
+    system->axis_y = {y.x * qCos(c_const.angle_axis) + y.z * qSin(c_const.angle_axis),
+                      y.y,
+                      - y.x * qSin(c_const.angle_axis) + y.z * qCos(c_const.angle_axis)};
+
+    system->axis_z = {z.x * qCos(c_const.angle_axis) + z.z * qSin(c_const.angle_axis),
+                      z.y,
+                      - z.x * qSin(c_const.angle_axis) + z.z * qCos(c_const.angle_axis)};
+}
+
+// -------------------------------------------
+
 Sky::Sky(QObject *parent) : QObject(parent) {
 
 }
@@ -83,10 +150,5 @@ Sky::~Sky() {
 }
 
 void Sky::Loop() {
-
-}
-
-cartesian Sky::SpecVec(spectator * spec) {
-    qreal al = Celestial::Angle(spec->longitude + spec->ground->getTime());
 
 }
