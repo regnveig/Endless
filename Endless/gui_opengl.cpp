@@ -167,7 +167,7 @@ void GUI_OpenGL::Sky::DoSun(GLfloat X, GLfloat Y, GLfloat Radius) {
     glEnd       ();
 }
 
-void GUI_OpenGL::Sky::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, qreal Phase, qreal SunDirection) {
+void GUI_OpenGL::Sky::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, [[maybe_unused]] qreal Phase, [[maybe_unused]] qreal SunDirection) {
 
     // VARIABLE
 

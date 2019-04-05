@@ -1,12 +1,6 @@
 #ifndef GUI_OPENGL_H
 #define GUI_OPENGL_H
 
-#include <QtGui>
-#include <QWidget>
-#include <QPoint>
-#include <QOpenGLWidget>
-#include <QTimer>
-#include <QMouseEvent>
 #include "global.h"
 
 class GUI_OpenGL : public QOpenGLWidget {

@@ -1,14 +1,22 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#include <QtGui>
+#include <QtMath>
+
 #include <QApplication>
 #include <QDebug>
-#include <QObject>
 #include <QList>
-#include <QTimerEvent>
-#include <QtMath>
+#include <QMouseEvent>
+#include <QObject>
+#include <QOpenGLWidget>
+#include <QPoint>
+#include <QRandomGenerator>
 #include <QThread>
+#include <QTimer>
+#include <QTimerEvent>
 #include <QVector3D>
+#include <QWidget>
 
 struct celestial_data {
 

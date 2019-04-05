@@ -1,6 +1,6 @@
+#include "global.h"
 #include "gui_opengl.h"
-#include <sky.h>
-
+#include "sky.h"
 
 int main(int argc, char *argv[]) {
 
