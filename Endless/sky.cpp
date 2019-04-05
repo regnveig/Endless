@@ -2,7 +2,8 @@
 
 /* ------ CELESTIAL SUBCLASS ------ */
 
-Sky::Celestial::Celestial(Celestial *new_parent, QString new_name, celestial_const new_const, qreal new_angle, qreal new_time) : parent(new_parent) {
+Sky::Celestial::Celestial(Celestial *new_parent, QString new_name, celestial_const new_const,
+                          qreal new_angle, qreal new_time) : parent(new_parent) {
 
     *name = new_name;
     *c_const = new_const;
@@ -72,7 +73,8 @@ void Sky::Celestial::LoopFamily() {
 
 /* ------ SPECTATOR SUBCLASS ------ */
 
-Sky::Spectator::Spectator(Celestial *new_ground, qreal new_latitude, qreal new_longitude) : ground(new_ground) {
+Sky::Spectator::Spectator(Celestial *new_ground, qreal new_latitude, qreal new_longitude)
+    : ground(new_ground) {
 
     *latitude = Angle(new_latitude);
     *longitude = Angle(new_longitude);
@@ -167,13 +169,14 @@ void Sky::Loop() {
         QString new_name = Family.at(item)->getName();
         QVector3D new_coord = Family.at(item)->getPosition() - Pos;
         float new_distance = new_coord.length();
-        qreal new_angular_size = 2 * qAtan(qreal(Family.at(item)->getCelestialConst().radius / (2.0f * new_distance)));
+        qreal new_angular_size =
+                2 * qAtan(qreal(Family.at(item)->getCelestialConst().radius / (2.0f * new_distance)));
 
         QVector3D new_vect1 (QVector3D::dotProduct(new_coord, System.axis_x),
                              QVector3D::dotProduct(new_coord, System.axis_y),
                              QVector3D::dotProduct(new_coord, System.axis_z));
 
-        new_vect1 /= new_distance * AxisLength;
+        new_vect1.normalize();
         list.append({new_name, new_vect1, new_distance, new_angular_size});
     }
 
