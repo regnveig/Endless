@@ -132,11 +132,19 @@ c_system Spectator::System() {
 
 Sky::Sky(QObject *parent) : QObject(parent) {
 
+    Play();
 }
 
 Sky::~Sky() {
 
+    Pause();
 }
+
+void Sky::Play() { *Timer_ID = startTimer(20); }
+
+void Sky::Pause() { killTimer(*Timer_ID); }
+
+void Sky::timerEvent([[maybe_unused]] QTimerEvent *event) { Loop(); }
 
 void Sky::Loop() {
 
@@ -156,10 +164,12 @@ void Sky::Loop() {
 
         QString new_name = Family.at(item)->getName();
         cartesian new_coord = Family.at(item)->getPosition() - Pos;
-        qreal new_x1 = cartesian::scalar(new_coord, System.axis_x) / (new_coord.length() * AxisLength);
-        qreal new_y1 = cartesian::scalar(new_coord, System.axis_y) / (new_coord.length() * AxisLength);
-        qreal new_z1 = cartesian::scalar(new_coord, System.axis_z) / (new_coord.length() * AxisLength);
-        list.append({new_name, new_x1, new_y1, new_z1});
+        qreal new_distance = new_coord.length();
+        qreal new_angular_size = 2 * qAtan(Family.at(item)->getCelestialConst().radius / (2 * new_distance));
+        qreal new_x1 = cartesian::scalar(new_coord, System.axis_x) / (new_distance * AxisLength);
+        qreal new_y1 = cartesian::scalar(new_coord, System.axis_y) / (new_distance * AxisLength);
+        qreal new_z1 = cartesian::scalar(new_coord, System.axis_z) / (new_distance * AxisLength);
+        list.append({new_name, new_x1, new_y1, new_z1, new_distance, new_angular_size});
     }
 
     emit Data(list);

@@ -22,7 +22,8 @@ SOURCES += \
 
 HEADERS += \
     gui_opengl.h \
-    sky.h
+    sky.h \
+    global.h
 
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

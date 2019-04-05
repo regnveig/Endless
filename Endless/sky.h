@@ -1,17 +1,7 @@
 #ifndef SKY_H
 #define SKY_H
 
-#include <QObject>
-#include <QDebug>
-#include <QList>
-#include <QTimerEvent>
-#include <QtMath>
-
-struct celestial_data {
-
-    QString name;
-    qreal x1, y1, z1;
-};
+#include "global.h"
 
 struct celestial_const {
 
@@ -92,9 +82,18 @@ signals:
 
 public slots:
 
-    void Loop();
+    void Play();
+    void Pause();
+
+protected:
+
+    void timerEvent(QTimerEvent *event) override;
 
 private:
+
+    void Loop();
+
+    int * Timer_ID = new int();
 
     celestial_const * SunConst = new celestial_const({0.0, 0.0, 0.0, 100.0, 0.0, 0.0});
     celestial_const * EarthConst = new celestial_const({25000.0, 0.0, 3.55e-06, 1.0, 0.4, 9.6e-05});
@@ -113,7 +112,7 @@ class Getter : public QObject {
 
 public:
 
-    explicit Getter(QObject *parent = nullptr) {}
+    explicit Getter(QObject *parent = nullptr) { }
     virtual ~Getter() {}
 
 public slots:
@@ -121,13 +120,12 @@ public slots:
     void GetData(QList<celestial_data> data) {
 
         for (auto item = 0; item < data.size(); item++) {
-            qDebug() << "name: " << qPrintable(data.at(item).name) <<
+            qDebug() << "\nname: " << qPrintable(data.at(item).name) <<
                         "\nx1: " << qPrintable(QString::number(data.at(item).x1)) <<
                         "\ny1: " << qPrintable(QString::number(data.at(item).y1)) <<
                         "\nz1: " << qPrintable(QString::number(data.at(item).z1)) <<
-                        "\nco: " << qPrintable(QString::number(
-                                                   cartesian({data.at(item).x1, data.at(item).y1, data.at(item).z1}).length()
-                                                   ));
+                        "\nS0: " << qPrintable(QString::number(data.at(item).distance)) <<
+                        "\nas: " << qPrintable(QString::number(data.at(item).angular_size));
         }
     }
 };

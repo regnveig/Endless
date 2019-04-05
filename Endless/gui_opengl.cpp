@@ -388,3 +388,7 @@ void GUI_OpenGL::Sky::DoSunCorona(GLfloat X, GLfloat Y, GLfloat Radius) {
     glVertex2f  (X, Y);
     glEnd();
 }
+
+void GUI_OpenGL::SkyData(QList<celestial_data>) {
+
+}

@@ -7,11 +7,16 @@
 #include <QOpenGLWidget>
 #include <QTimer>
 #include <QMouseEvent>
+#include "global.h"
 
 class GUI_OpenGL : public QOpenGLWidget {
 public:
 
     GUI_OpenGL(QWidget *parent = nullptr);
+
+public slots:
+
+    void SkyData(QList<celestial_data>);
 
 protected:
 
