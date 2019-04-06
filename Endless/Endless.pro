@@ -16,6 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++17
 
 SOURCES += \
+    global.cpp \
         main.cpp \
     gui_opengl.cpp \
     sky.cpp
@@ -25,6 +26,6 @@ HEADERS += \
     sky.h \
     global.h
 
-qnx: target.path = /tmp/$${TARGET}/bin
+qnx: target.path = /dev/my/MyDosc/temp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target

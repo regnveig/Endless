@@ -26,4 +26,9 @@ struct celestial_data {
     qreal angular_size;
 };
 
+struct GlobalFunc {
+
+    static QVector3D        MatrixRotate        (QVector3D vect, qreal angle_x, qreal angle_y, qreal angle_z);
+};
+
 #endif // GLOBAL_H

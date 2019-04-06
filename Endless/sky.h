@@ -80,7 +80,6 @@ private:
 
     private:
 
-        QVector3D           AxisRotate          (QVector3D vect, qreal angle);
         Celestial           *ground;
         qreal               *latitude           = new qreal(),
                             *longitude          = new qreal();

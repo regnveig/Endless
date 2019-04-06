@@ -35,15 +35,20 @@ void GUI_OpenGL::paintGL() {
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
-   glOrtho(-0.5, 1.5, -0.5, 1.5, -10.0, 10.0);
+   glOrtho(-1.5, 1.5, -1.5, 1.5, -20.0, 20.0);
    glRotatef(yAxisRotation, 0.0, 1.0, 0.0);
    glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
 
-   // Sky test screen
 
+   // Sky test screen
    Sky::SkyBox();
-   //Sky::DoSunCorona(0, 0, 1.0);
-   Sky::DoSun(0, 0, 0.4f);
+   for (auto item = 0; item < sky_data.size(); item++) {
+       if (sky_data.at(item).name == QString("sun")) {
+           Sky::DoSunCorona(sky_data.at(item).vect1, 0.7f);
+           Sky::DoSun(sky_data.at(item).vect1, 0.3f); }
+       if (sky_data.at(item).name == QString("moon")) {
+           Sky::DoMoon(sky_data.at(item).vect1, 0.3f, 0.0, 0.0); }
+   }
    //Sky::DoMoon(-0.6f, -0.6f, 0.3f, 0.0, 0.0);
    //Sky::DoStar(0, -0.7f, 0.03f);
    //Sky::DoStar(0.7f, 0, 0.1f, 0.03f, 6);
@@ -118,15 +123,20 @@ void GUI_OpenGL::Sky::SkyBox() {
     glEnd       ();
 }
 
-void GUI_OpenGL::Sky::DoSun(GLfloat X, GLfloat Y, GLfloat Radius) {
+void GUI_OpenGL::Sky::DoSun(QVector3D vect, GLfloat Radius) {
 
     // VARIABLE
+
+    //GLfloat X = GLfloat(vect.x());
+    //GLfloat Y = GLfloat(vect.y());
+    //GLfloat Z = GLfloat(vect.z());
 
     GLfloat light_color[]       = {1.0f, 1.0f, 1.0f};
     GLfloat sun_edge_color[]    = {0.94f, 0.93f, 0.57f};
 
     const GLfloat turn          = GLfloat(qSqrt(0.5));
 
+    GLfloat far = 3.0f;
     GLfloat c4                  = Radius;
     GLfloat c3                  = c4 * turn;
     GLfloat c2                  = Radius * 0.9f;
@@ -134,40 +144,47 @@ void GUI_OpenGL::Sky::DoSun(GLfloat X, GLfloat Y, GLfloat Radius) {
 
     // PRIMITIVE
 
+    glPushMatrix();
+
+    qDebug() << "\n" << vect.x() << " " << vect.y() << " " << vect.z();
+    PlaceSkylight(&vect);
+
     glBegin     (GL_QUADS);
     glColor3fv  (sun_edge_color);
-    glVertex2f  (X + c3, Y + c3);
-    glVertex2f  (X - c3, Y + c3);
-    glVertex2f  (X - c3, Y - c3);
-    glVertex2f  (X + c3, Y - c3);
+    glVertex3f  (c3, c3, far);
+    glVertex3f  (c3, - c3, far);
+    glVertex3f  (- c3, - c3, far);
+    glVertex3f  (- c3, c3, far);
     glEnd       ();
 
     glBegin     (GL_QUADS);
     glColor3fv  (sun_edge_color);
-    glVertex2f  (X, Y + c4);
-    glVertex2f  (X - c4, Y);
-    glVertex2f  (X, Y - c4);
-    glVertex2f  (X + c4, Y);
+    glVertex3f  (0.0f, c4, far);
+    glVertex3f  (c4, 0.0f, far);
+    glVertex3f  (0.0f, - c4, far);
+    glVertex3f  (- c4, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_QUADS);
     glColor3fv  (light_color);
-    glVertex2f  (X + c1, Y + c1);
-    glVertex2f  (X - c1, Y + c1);
-    glVertex2f  (X - c1, Y - c1);
-    glVertex2f  (X + c1, Y - c1);
+    glVertex3f  (c1, c1, far);
+    glVertex3f  (c1, - c1, far);
+    glVertex3f  (- c1, - c1, far);
+    glVertex3f  (- c1, c1, far);
     glEnd       ();
 
     glBegin     (GL_QUADS);
     glColor3fv  (light_color);
-    glVertex2f  (X, Y + c2);
-    glVertex2f  (X - c2, Y);
-    glVertex2f  (X, Y - c2);
-    glVertex2f  (X + c2, Y);
+    glVertex3f  (0.0f, c2, far);
+    glVertex3f  (c2, 0.0f, far);
+    glVertex3f  (0.0f, - c2, far);
+    glVertex3f  (- c2, 0.0f, far);
     glEnd       ();
+
+    glPopMatrix();
 }
 
-void GUI_OpenGL::Sky::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, [[maybe_unused]] qreal Phase, [[maybe_unused]] qreal SunDirection) {
+void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, [[maybe_unused]] qreal Phase, [[maybe_unused]] qreal SunDirection) {
 
     // VARIABLE
 
@@ -180,6 +197,8 @@ void GUI_OpenGL::Sky::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, [[maybe_unuse
     const GLfloat cy            = GLfloat(qCos(M_PI/3));
     const GLfloat tri_center    = GLfloat(1 / qSqrt(3));
 
+    GLfloat far = 3.0f;
+
     GLfloat c1                  = Radius * 0.9f;
     GLfloat c2                  = Radius;
     GLfloat ct                  = c1 * tri_center;
@@ -188,85 +207,95 @@ void GUI_OpenGL::Sky::DoMoon(GLfloat X, GLfloat Y, GLfloat Radius, [[maybe_unuse
 
     // PRIMITIVE
 
+    glPushMatrix();
+    PlaceSkylight(&vect);
+
     glBegin     (GL_POLYGON);
     glColor3fv  (moon_edge_color);
-    glVertex2f  (X, Y + c2);
-    glVertex2f  (X - c2 * cx, Y + c2 * cy);
-    glVertex2f  (X - c2 * cx, Y - c2 * cy);
-    glVertex2f  (X, Y - c2);
-    glVertex2f  (X + c2 * cx, Y - c2 * cy);
-    glVertex2f  (X + c2 * cx, Y + c2 * cy);
+    glVertex3f  (0.0f, c2, far);
+    glVertex3f  (c2 * cx, c2 * cy, far);
+    glVertex3f  (c2 * cx, - c2 * cy, far);
+    glVertex3f  (0.0f, - c2, far);
+    glVertex3f  (- c2 * cx, - c2 * cy, far);
+    glVertex3f  (- c2 * cx, c2 * cy, far);
+
     glEnd       ();
 
     glBegin     (GL_POLYGON);
     glColor3fv  (moon_color);
-    glVertex2f  (X, Y + c1);
-    glVertex2f  (X - c1 * cx, Y + c1 * cy);
-    glVertex2f  (X - c1 * cx, Y - c1 * cy);
-    glVertex2f  (X, Y - c1);
-    glVertex2f  (X + c1 * cx, Y - c1 * cy);
-    glVertex2f  (X + c1 * cx, Y + c1 * cy);
+    glVertex3f  (0.0f, c1, far);
+    glVertex3f  (c1 * cx, c1 * cy, far);
+    glVertex3f  (c1 * cx, - c1 * cy, far);
+    glVertex3f  (0.0f, - c1, far);
+    glVertex3f  (- c1 * cx, - c1 * cy, far);
+    glVertex3f  (- c1 * cx, c1 * cy, far);
     glEnd       ();
 
     // dots
 
     glBegin     (GL_TRIANGLES);
     glColor3fv  (moon_dot_color);
-    glVertex2f  (X + ct * cy + cm, Y + ct * cx);
-    glVertex2f  (X + (ct - cm) * cy, Y + (ct + cm) * cx);
-    glVertex2f  (X + (ct - cm) * cy, Y + (ct - cm) * cx);
+    glVertex3f  (ct * cy + cm, ct * cx, far);
+    glVertex3f  ((ct - cm) * cy, (ct - cm) * cx, far);
+    glVertex3f  ((ct - cm) * cy, (ct + cm) * cx, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor3fv  (moon_dot_color);
-    glVertex2f  (X - ct * (cy + 1), Y + ct * cx);
-    glVertex2f  (X, Y);
-    glVertex2f  (X, Y + 2 * ct * cx);
+    glVertex3f  (- ct * (cy + 1), ct * cx, far);
+
+    glVertex3f  (0.0f, 2 * ct * cx, far);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor3fv  (moon_dot_color);
-    glVertex2f  (X + ct - cm, Y);
-    glVertex2f  (X + ct + cm * cy, Y - cm * cx);
-    glVertex2f  (X + ct + cm * cy, Y + cm * cx);
+    glVertex3f  (ct - cm, 0.0f, far);
+
+    glVertex3f  (ct + cm * cy, cm * cx, far);
+    glVertex3f  (ct + cm * cy, - cm * cx, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor3fv  (moon_dot_color);
-    glVertex2f  (X - ct + cm, Y);
-    glVertex2f  (X - ct - cm * cy, Y + cm * cx);
-    glVertex2f  (X - ct - cm * cy, Y - cm * cx);
+    glVertex3f  (- ct + cm, 0.0f, far);
+
+    glVertex3f  (- ct - cm * cy, - cm * cx, far);
+    glVertex3f  (- ct - cm * cy, cm * cx, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor3fv  (moon_dot_color);
-    glVertex2f  (X + ct * cy + cs, Y - ct * cx);
-    glVertex2f  (X + (ct - cs) * cy, Y - (ct - cs) * cx);
-    glVertex2f  (X + (ct - cs) * cy, Y - (ct + cs) * cx);
+    glVertex3f  (ct * cy + cs, - ct * cx, far);
+
+    glVertex3f  ((ct - cs) * cy, - (ct + cs) * cx, far);
+    glVertex3f  ((ct - cs) * cy, - (ct - cs) * cx, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor3fv  (moon_edge_color);
-    glVertex2f  (X - ct * cy - cm, Y + ct * cx);
-    glVertex2f  (X - (ct - cm) * cy, Y + (ct - cm) * cx);
-    glVertex2f  (X - (ct - cm) * cy, Y + (ct + cm) * cx);
+    glVertex3f  (- ct * cy - cm, ct * cx, far);
+
+    glVertex3f  (- (ct - cm) * cy, (ct + cm) * cx, far);
+    glVertex3f  (- (ct - cm) * cy, (ct - cm) * cx, far);
     glEnd       ();
 
     // shadow
 
     glColor4fv (moon_shadow_color);
     glBegin(GL_POLYGON);
-    glVertex2f((Radius * 0.68f * cx) + X,
-               (Radius * 0.68f * cy) + Y);
-    glVertex2f(X, (Radius * 0.8f) + Y);
-    glVertex2f(-(Radius * 0.9f * cx) + X,
-               (Radius * 0.9f * cy) + Y);
-    glVertex2f(-(Radius * 0.9f * cx) + X,
-               -(Radius * 0.9f * cy) + Y);
-    glVertex2f(X, -(Radius * 0.8f) + Y);
-    glVertex2f((Radius * 0.68f * cx) + X,
-               -(Radius * 0.68f * cy) + Y);
+    glVertex3f((Radius * 0.68f * cx),
+               (Radius * 0.68f * cy), far);
+    glVertex3f((Radius * 0.68f * cx),
+               -(Radius * 0.68f * cy), far);
+    glVertex3f(0.0f, -(Radius * 0.8f), far);
+    glVertex3f(-(Radius * 0.9f * cx),
+               -(Radius * 0.9f * cy), far);
+    glVertex3f(-(Radius * 0.9f * cx),
+               (Radius * 0.9f * cy), far);
+    glVertex3f(0.0f, (Radius * 0.8f), far);
     glEnd();
+    glPopMatrix();
 }
 
 void GUI_OpenGL::Sky::DoStar(GLfloat X, GLfloat Y, GLfloat Radius) {
@@ -310,7 +339,7 @@ void GUI_OpenGL::Sky::DoStar(GLfloat X, GLfloat Y, GLfloat Radius, GLfloat Inner
     }
 }
 
-void GUI_OpenGL::Sky::DoSunCorona(GLfloat X, GLfloat Y, GLfloat Radius) {
+void GUI_OpenGL::Sky::DoSunCorona(QVector3D vect, GLfloat Radius) {
 
     // VARIABLE
 
@@ -319,76 +348,98 @@ void GUI_OpenGL::Sky::DoSunCorona(GLfloat X, GLfloat Y, GLfloat Radius) {
 
     const GLfloat turn      = GLfloat(qSqrt(0.5));
 
+    GLfloat far = 3.0f;
+
     GLfloat c2              = Radius;
     GLfloat c1              = Radius * turn;
 
     // PRIMITIVE
 
+    glPushMatrix();
+    PlaceSkylight(&vect);
+
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X + c1, Y + c1);
-    glVertex2f  (X, Y + c2);
+    glVertex3f  (0.0f, c2, far);
+    glVertex3f  (c1, c1, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X, Y + c2);
-    glVertex2f  (X - c1, Y + c1);
+
+    glVertex3f  (- c1, c1, far);
+    glVertex3f  (0.0f, c2, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X - c1, Y + c1);
-    glVertex2f  (X - c2, Y);
+
+    glVertex3f  (- c2, 0.0f, far);
+    glVertex3f  (- c1, c1, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X - c2, Y);
-    glVertex2f  (X - c1, Y - c1);
+
+    glVertex3f  (- c1, - c1, far);
+    glVertex3f  (- c2, 0.0f, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X - c1, Y - c1);
-    glVertex2f  (X, Y - c2);
+
+    glVertex3f  (0.0f, - c2, far);
+    glVertex3f  (- c1, - c1, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X, Y - c2);
-    glVertex2f  (X + c1, Y - c1);
+
+    glVertex3f  (c1, - c1, far);
+    glVertex3f  (0.0f, - c2, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X + c1, Y - c1);
-    glVertex2f  (X + c2, Y);
+
+    glVertex3f  (c2, 0.0f, far);
+    glVertex3f  (c1, - c1, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd       ();
 
     glBegin     (GL_TRIANGLES);
     glColor4fv  (sky_color);
-    glVertex2f  (X + c2, Y);
-    glVertex2f  (X + c1, Y + c1);
+
+    glVertex3f  (c1, c1, far);
+    glVertex3f  (c2, 0.0f, far);
     glColor4fv  (light_color1);
-    glVertex2f  (X, Y);
+    glVertex3f  (0.0f, 0.0f, far);
     glEnd();
+    glPopMatrix();
 }
 
-void GUI_OpenGL::SkyData(QList<celestial_data>) {
+void GUI_OpenGL::SkyData(QList<celestial_data> data) { sky_data = data; this->update(); };
 
+void GUI_OpenGL::Sky::PlaceSkylight(QVector3D *vect) {
+
+    glRotatef(-90.0, 1.0, 0.0, 0.0);
+
+    GLfloat zenith = GLfloat(qRadiansToDegrees(qAcos(qreal(vect->z()))));
+    GLfloat azimuth = GLfloat(qRadiansToDegrees(qAcos(qreal(vect->y()))));
+
+    glRotatef(-azimuth, 0.0f, 0.0f, 1.0f);
+    glRotatef(zenith, 0.0f, 1.0f, 0.0f);
 }

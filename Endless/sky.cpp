@@ -113,16 +113,9 @@ Sky::c_system Sky::Spectator::System() {
                  float(qSin(al + M_PI_2)) * c_const.radius,
                  0.0f);
 
-    return {AxisRotate(x, c_const.angle_axis),
-            AxisRotate(y, c_const.angle_axis),
-            AxisRotate(z, c_const.angle_axis)};
-}
-
-QVector3D Sky::Spectator::AxisRotate(QVector3D vect, qreal angle) {
-
-    return QVector3D(vect.x() * float(qCos(angle)) + vect.z() * float(qSin(angle)),
-             vect.y(),
-            -vect.x() * float(qSin(angle)) + vect.z() * float(qCos(angle)));
+    return {GlobalFunc::MatrixRotate(x, 0.0, c_const.angle_axis, 0.0),
+            GlobalFunc::MatrixRotate(y, 0.0, c_const.angle_axis, 0.0),
+            GlobalFunc::MatrixRotate(z, 0.0, c_const.angle_axis, 0.0)};
 }
 
 /* ------ SKY CLASS ------ */
@@ -138,7 +131,7 @@ Sky::~Sky() {
     delete Sun; Sun = nullptr;
 }
 
-void Sky::Play() { *Timer_ID = startTimer(100); }
+void Sky::Play() { *Timer_ID = startTimer(1); }
 
 void Sky::Pause() { killTimer(*Timer_ID); }
 
