@@ -97,28 +97,4 @@ private:
     Spectator       *Player         = new Spectator(Earth, 0.3, 0.0);
 };
 
-class Getter : public QObject {
-
-    Q_OBJECT
-
-public:
-
-    explicit Getter(QObject *parent = nullptr) { }
-    virtual ~Getter() { }
-
-public slots:
-
-    void GetData(QList<celestial_data> data) {
-
-        for (auto item = 0; item < data.size(); item++) {
-            qDebug() << "\nname: " << qPrintable(data.at(item).name) <<
-                        "\nx1: " << qPrintable(QString::number(qreal(data.at(item).vect1.x()))) <<
-                        "\ny1: " << qPrintable(QString::number(qreal(data.at(item).vect1.y()))) <<
-                        "\nz1: " << qPrintable(QString::number(qreal(data.at(item).vect1.z()))) <<
-                        "\nS0: " << qPrintable(QString::number(qreal(data.at(item).distance))) <<
-                        "\nas: " << qPrintable(QString::number(data.at(item).angular_size));
-        }
-    }
-};
-
 #endif // SKY_H

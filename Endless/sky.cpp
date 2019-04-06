@@ -153,7 +153,6 @@ void Sky::Loop() {
     QList<celestial_data> list;
     c_system System = Player->System();
     QVector3D Pos = (Player->getGround()->getPosition() + System.axis_z);
-    float AxisLength = Player->getGround()->getCelestialConst().radius;
     QList<Celestial *> Family = Sun->getFamily();
     Family.append(Sun);
 
