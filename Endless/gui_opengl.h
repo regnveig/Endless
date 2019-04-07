@@ -9,46 +9,48 @@ class GUI_OpenGL : public QOpenGLWidget {
 
 public:
 
-    GUI_OpenGL(QWidget *parent = nullptr);
+                        GUI_OpenGL                  (QWidget *parent = nullptr);
 
 public slots:
 
-    void SkyData(QList<celestial_data> data);
+    void                SkyData                     (QList<celestial_data> data);
 
 protected:
 
-   void initializeGL() override;
-   void resizeGL(int nWidth, int nHeight) override;
-   void paintGL() override;
-
-   void mousePressEvent(QMouseEvent* event) override;
-   void mouseMoveEvent(QMouseEvent* event) override;
+   void                 initializeGL                () override;
+   void                 resizeGL                    (int nWidth, int nHeight) override;
+   void                 paintGL                     () override;
+   void                 mousePressEvent             (QMouseEvent* event) override;
+   void                 mouseMoveEvent              (QMouseEvent* event) override;
 
 private:
 
     struct Sky {
 
-        static void PlaceSkylight(QVector3D *vect);
-        static void SkyBox(GLfloat Z);
-        static void DoGround();
-        static void DoSun(QVector3D vect, GLfloat Radius);
-        static void DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z, qreal Phase, qreal SunDirection);
+        static void         DoMoon                  (QVector3D vect, GLfloat Radius, GLfloat Z,
+                                                     qreal Phase, qreal SunDirection);
+        static void         DoSkyBox                (GLfloat Z);
+        static void         DoStar                  (QVector3D vect, GLfloat Radius, GLfloat Z);
+        static void         DoStar                  (QVector3D vect, GLfloat Radius, GLfloat Z,
+                                                     GLfloat Inner_Radius, quint8 Ray_num);
+        static void         DoSun                   (QVector3D vect, GLfloat Radius);
+        static void         DoSunCorona             (QVector3D vect, GLfloat Radius);
+        static void         PlaceSkylight           (QVector3D *vect);
 
-        static void DoStar(QVector3D vect, GLfloat Radius, GLfloat Z);
-        static void DoStar(QVector3D vect, GLfloat Radius, GLfloat Z, GLfloat Inner_Radius, quint8 Ray_num);
-
-        static void DoSunCorona(QVector3D vect, GLfloat Radius);
+        static constexpr GLfloat SKY_SIZE                = 5.0f;
     };
 
-    QPoint pressPosition;
-    QPoint releasePosition;
+    void                    DrawSky();
 
-    GLfloat xAxisRotation;
-    GLfloat yAxisRotation;
-    GLfloat currentWidth;
-    GLfloat currentHeight;
+    QList<celestial_data>   sky_data;
 
-    QList<celestial_data> sky_data;
+    GLfloat                 currentWidth,
+                            currentHeight;
+    QPoint                  pressPosition;
+    QPoint                  releasePosition;
+    GLfloat                 xAxisRotation,
+                            yAxisRotation;
+
 };
 
 #endif // GUI_OPENGL_H
