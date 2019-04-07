@@ -29,6 +29,7 @@ struct celestial_data {
 struct GlobalFunc {
 
     static QVector3D        MatrixRotate        (QVector3D vect, qreal angle_x, qreal angle_y, qreal angle_z);
+    static QList<QVector3D> SphericRandom       (quint32 num, quint32 Seed);
 };
 
 #endif // GLOBAL_H

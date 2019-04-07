@@ -44,18 +44,22 @@ void GUI_OpenGL::paintGL() {
    Sky::SkyBox();
 
    for (auto item = 0; item < sky_data.size(); item++) {
+       QVector3D vect = sky_data.at(item).vect1;
+       GLfloat Radius = GLfloat(sky_data.at(item).angular_size * 2 * M_PI);
        if (sky_data.at(item).name == QString("sun")) {
-           Sky::DoSunCorona(sky_data.at(item).vect1, 0.7f);
-           Sky::DoSun(sky_data.at(item).vect1, 0.3f); }
+           Sky::DoSunCorona(vect, Radius * 3);
+           Sky::DoSun(vect, Radius); }
        if (sky_data.at(item).name == QString("moon")) {
-           Sky::DoMoon(sky_data.at(item).vect1, 0.2f, 0.0, 0.0); }
+           Sky::DoMoon(vect, Radius, 0.0, 0.0); }
        if (sky_data.at(item).name == QString("star_0")) {
-           Sky::DoStar(sky_data.at(item).vect1, 0.02f); }
+           Sky::DoStar(vect, 0.02f); }
        if (sky_data.at(item).name == QString("star_1")) {
-           Sky::DoStar(sky_data.at(item).vect1, 0.06f, 0.02f, 6); }
+           Sky::DoStar(vect, 0.06f, 0.02f, 6); }
        if (sky_data.at(item).name == QString("star_2")) {
-           Sky::DoStar(sky_data.at(item).vect1, 0.09f, 0.03f, 8); }
+           Sky::DoStar(vect, 0.09f, 0.03f, 8); }
    }
+
+   //Sky::DoGround();
 }
 
 void GUI_OpenGL::mousePressEvent(QMouseEvent *event) {
@@ -116,7 +120,11 @@ void GUI_OpenGL::Sky::SkyBox() {
     glColorPointer(3, GL_FLOAT, 0, cubeColorArray);
     glDrawElements(GL_QUADS, 24, GL_UNSIGNED_BYTE, cubeIndexArray);
 
-    // Типа земля
+}
+
+void GUI_OpenGL::Sky::DoGround() {
+
+    GLfloat cz = 5.0f;
 
     glBegin     (GL_QUADS);
     glColor3f  (0.14f, 0.49f, 0.18f);
@@ -136,7 +144,7 @@ void GUI_OpenGL::Sky::DoSun(QVector3D vect, GLfloat Radius) {
 
     const GLfloat turn          = GLfloat(qSqrt(0.5));
 
-    GLfloat far                 = 3.0f;
+    GLfloat far                 = 5.0f;
     GLfloat c4                  = Radius;
     GLfloat c3                  = c4 * turn;
     GLfloat c2                  = Radius * 0.9f;
@@ -195,7 +203,7 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, [[maybe_unused]] qr
     const GLfloat cy            = GLfloat(qCos(M_PI/3));
     const GLfloat tri_center    = GLfloat(1 / qSqrt(3));
 
-    GLfloat far                 = 3.0f;
+    GLfloat far                 = 5.0f;
     GLfloat c1                  = Radius * 0.9f;
     GLfloat c2                  = Radius;
     GLfloat ct                  = c1 * tri_center;
@@ -299,7 +307,7 @@ void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius) {
     // VARIABLE
 
     GLfloat star_color[]        = {1.0f, 1.0f, 1.0f};
-    GLfloat far                 = 3.0f;
+    GLfloat far                 = 5.0f;
 
     // PRIMITIVE
 
@@ -323,7 +331,7 @@ void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius, GLfloat Inner_Radiu
 
     GLfloat star_color[]        = {1.0f, 1.0f, 1.0f};
     qreal st                    = M_PI * 2 / Ray_num;
-    GLfloat far                 = 3.0f;
+    GLfloat far                 = 5.0f;
 
     // PRIMITIVE
 
@@ -359,7 +367,7 @@ void GUI_OpenGL::Sky::DoSunCorona(QVector3D vect, GLfloat Radius) {
 
     const GLfloat turn      = GLfloat(qSqrt(0.5));
 
-    GLfloat far             = 3.0f;
+    GLfloat far             = 5.0f;
     GLfloat c2              = Radius;
     GLfloat c1              = Radius * turn;
 

@@ -30,6 +30,7 @@ private:
 
         static void PlaceSkylight(QVector3D *vect);
         static void SkyBox();
+        static void DoGround();
         static void DoSun(QVector3D vect, GLfloat Radius);
         static void DoMoon(QVector3D vect, GLfloat Radius, qreal Phase, qreal SunDirection);
 

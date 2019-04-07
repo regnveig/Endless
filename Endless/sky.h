@@ -44,6 +44,12 @@ private:
                             axis_z;
     };
 
+    struct Star {
+
+        QVector3D coord;
+        quint8 type;
+    };
+
     class Celestial {
     public:
 
@@ -86,15 +92,17 @@ private:
     };
 
     static qreal    Angle           (qreal angle);
+    static bool     CelestialSort   (const celestial_data &a, const celestial_data &b);
     void            Loop            ();
     int             *Timer_ID       = new int();
     Celestial       *Sun            = new Celestial(nullptr, QString("sun"),
                                                     {0.0f, 100.0f, 0.0, 0.0, 0.0, 0.0}, 0.0, 0.0);
     Celestial       *Earth          = new Celestial(Sun, QString("earth"),
-                                                    {25000.0f, 1.0f, 0.0, 3.55e-06, 0.4, 9.6e-05}, 3.71, -1.0);
+                                                    {2500.0f, 1.0f, 0.0, 3.55e-06, 0.4, 9.6e-05}, 3.71, -1.0);
     Celestial       *Moon           = new Celestial(Earth, QString("moon"),
-                                                    {64.0f, 0.3f, 0.5, 2.48e-05, -0.4, 2.48e-05}, 0.0, 0.0);
+                                                    {10.0f, 0.3f, 0.5, 2.48e-05, -0.4, 2.48e-05}, 0.0, 0.0);
     Spectator       *Player         = new Spectator(Earth, 0.3, 0.0);
+    QList<Star>     *StarPack       = new QList<Star>();
 };
 
 #endif // SKY_H

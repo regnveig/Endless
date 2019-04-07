@@ -120,7 +120,22 @@ Sky::c_system Sky::Spectator::System() {
 
 /* ------ SKY CLASS ------ */
 
-Sky::Sky(QObject *parent) : QObject(parent) { Play(); }
+Sky::Sky(QObject *parent) : QObject(parent) {
+
+    quint32 StarNum = 500;
+    quint8 StarType = 0;
+
+    QList<QVector3D> list = GlobalFunc::SphericRandom(StarNum, 20);
+
+    while(!list.isEmpty()) {
+
+        if (list.size() < int(StarNum / 10)) StarType = 1;
+        if (list.size() < int(StarNum / 50)) StarType = 2;
+        StarPack->append({list.takeFirst(), StarType});
+    }
+
+    Play();
+}
 
 Sky::~Sky() {
 
@@ -167,10 +182,21 @@ void Sky::Loop() {
         QVector3D new_vect1 (QVector3D::dotProduct(new_coord, System.axis_x),
                              QVector3D::dotProduct(new_coord, System.axis_y),
                              QVector3D::dotProduct(new_coord, System.axis_z));
-
         new_vect1.normalize();
         list.append({new_name, new_vect1, new_distance, new_angular_size});
+    }
+    std::sort(list.begin(), list.end(), CelestialSort);
+
+    for (auto item = 0; item < StarPack->size(); item++) {
+
+        QVector3D new_vect (QVector3D::dotProduct(StarPack->at(item).coord, System.axis_x),
+                             QVector3D::dotProduct(StarPack->at(item).coord, System.axis_y),
+                             QVector3D::dotProduct(StarPack->at(item).coord, System.axis_z));
+        new_vect.normalize();
+        list.prepend({QString("star_") + QString::number(StarPack->at(item).type), new_vect, -1.0, -1.0});
     }
 
     emit Data(list);
 }
+
+bool Sky::CelestialSort(const celestial_data &a, const celestial_data &b) { return a.distance > b.distance; }
