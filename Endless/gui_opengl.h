@@ -29,13 +29,13 @@ private:
     struct Sky {
 
         static void PlaceSkylight(QVector3D *vect);
-        static void SkyBox();
+        static void SkyBox(GLfloat Z);
         static void DoGround();
         static void DoSun(QVector3D vect, GLfloat Radius);
-        static void DoMoon(QVector3D vect, GLfloat Radius, qreal Phase, qreal SunDirection);
+        static void DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z, qreal Phase, qreal SunDirection);
 
-        static void DoStar(QVector3D vect, GLfloat Radius);
-        static void DoStar(QVector3D vect, GLfloat Radius, GLfloat Inner_Radius, quint8 Ray_num);
+        static void DoStar(QVector3D vect, GLfloat Radius, GLfloat Z);
+        static void DoStar(QVector3D vect, GLfloat Radius, GLfloat Z, GLfloat Inner_Radius, quint8 Ray_num);
 
         static void DoSunCorona(QVector3D vect, GLfloat Radius);
     };
