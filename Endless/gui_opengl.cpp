@@ -63,6 +63,11 @@ void GUI_OpenGL::SkyData(QList<celestial_data> data) {
     this->update();
 };
 
+void GUI_OpenGL::StarsData(QList<star> data) {
+
+    stars_data = data;
+};
+
 void GUI_OpenGL::DrawSky() {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -72,6 +77,18 @@ void GUI_OpenGL::DrawSky() {
     for (auto item = 0; item < sky_data.size(); item++)
         if (sky_data.at(item).name == QString("sun"))
             Z = GLfloat(sky_data.at(item).vect1.z());
+
+    for (auto item = 0; item < stars_data.size(); item++) {
+
+        QVector3D vect = stars_data.at(item).coord;
+
+        if (stars_data.at(item).type == 0)
+            Sky::DoStar(vect, 0.02f);
+        if (stars_data.at(item).type == 1)
+            Sky::DoStar(vect, 0.06f, 0.02f, 6);
+        if (stars_data.at(item).type == 2)
+            Sky::DoStar(vect, 0.09f, 0.03f, 8);
+    }
 
     Sky::DoSkyBox(Z);
 
@@ -87,12 +104,6 @@ void GUI_OpenGL::DrawSky() {
         }
         if (sky_data.at(item).name == QString("moon"))
             Sky::DoMoon(vect, Radius, Z, 0.0, 0.0);
-        if (sky_data.at(item).name == QString("star_0"))
-            Sky::DoStar(vect, 0.02f, Z);
-        if (sky_data.at(item).name == QString("star_1"))
-            Sky::DoStar(vect, 0.06f, Z, 0.02f, 6);
-        if (sky_data.at(item).name == QString("star_2"))
-            Sky::DoStar(vect, 0.09f, Z, 0.03f, 8);
     }
 }
 
@@ -121,7 +132,7 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z,
     GLfloat             moon_edge_color[]       = {0.25f, 0.2f, 0.2f, 1.0f};
     GLfloat             moon_dot_color[]        = {0.7f, 0.65f, 0.65f, 1.0f};
     GLfloat             moon_color[]            = {0.97f, 0.95f, 0.95f, 1.0f};
-    GLfloat             moon_shadow_color[]     = {0.15f, 0.1f, 0.1f, 0.8f};
+    GLfloat             moon_shadow_color[]     = {0.15f, 0.1f, 0.1f, 0.9f};
     GLfloat             frontier                = 0.3f;
     GLfloat             alpha                   = 1.0f;
 
@@ -239,49 +250,47 @@ void GUI_OpenGL::Sky::DoSkyBox(GLfloat Z) {
 
     // color
 
-    GLfloat             midday[]        = {0.2f, 0.48f, 0.78f};
-    GLfloat             rise[]          = {0.88f, 0.37f, 0.07f};
-    GLfloat             frontier        = 0.5f;
+    GLfloat             midday[]        = {0.2f, 0.48f, 0.78f, 1.0f};
+    GLfloat             rise[]          = {0.88f, 0.37f, 0.07f, 1.0f};
+    GLfloat             frontier        = 0.3f;
+    GLfloat             frontier2       = 0.5f;
     GLfloat             lightness       = 0.0f;
     GLfloat             shine           = 0.0f;
 
-    if (Z < -frontier) {
-
+    if (Z < -frontier)
         lightness = 0.0f;
-        shine = 0.0f;
-    }
-
-    if ((Z > -frontier) && (Z < frontier)) {
-
+    if ((Z > -frontier) && (Z < frontier))
         lightness = Z / (frontier * 2) + 0.5f;
-        shine = GLfloat(qCos(qreal(Z / frontier) * M_PI_2));
-    }
-
-    if (Z > frontier) {
+    if (Z > frontier)
         lightness = 1.0f;
+
+    if (Z < -frontier2)
         shine = 0.0f;
-    }
+    if ((Z > -frontier2) && (Z < frontier2))
+        shine = GLfloat(qCos(qreal(Z / frontier2) * M_PI_2));
+    if (Z > frontier2) shine = 0.0f;
 
-    GLfloat top[] = {midday[0] * lightness,
-                     midday[1] * lightness,
-                     midday[2] * lightness};
-    GLfloat bottom[] = {top[0] * (1 - shine) + rise[0] * shine,
-                        top[1] * (1 - shine) + rise[1] * shine,
-                        top[2] * (1 - shine) + rise[2] * shine};
+    GLfloat top[] = {midday[0] * lightness * 0.8f,
+                     midday[1] * lightness * 0.8f,
+                     midday[2] * lightness * 0.8f,
+                     lightness};
+    GLfloat bottom[] = {midday[0] * lightness * (1 - shine) + rise[0] * shine,
+                        midday[1] * lightness * (1 - shine) + rise[1] * shine,
+                        midday[2] * lightness * (1 - shine) + rise[2] * shine,
+                        lightness * (1 - shine) + rise[3] * shine};
 
-    GLfloat cubeColorArray[8][3] = {
-        {top[0], top[1], top[2]},
-        {bottom[0], bottom[1], bottom[2]},
-        {bottom[0], bottom[1], bottom[2]},
-        {top[0], top[1], top[2]},
-        {top[0], top[1], top[2]},
-        {bottom[0], bottom[1], bottom[2]},
-        {bottom[0], bottom[1], bottom[2]},
-        {top[0], top[1], top[2]}
+    GLfloat cubeColorArray[8][4] = {
+        {top[0], top[1], top[2], top[3]},
+        {bottom[0], bottom[1], bottom[2], bottom[3]},
+        {bottom[0], bottom[1], bottom[2], bottom[3]},
+        {top[0], top[1], top[2], top[3]},
+        {top[0], top[1], top[2], top[3]},
+        {bottom[0], bottom[1], bottom[2], bottom[3]},
+        {bottom[0], bottom[1], bottom[2], bottom[3]},
+        {top[0], top[1], top[2], top[3]}
     };
 
     // shape
-    // лучше не трогать. Я понятия не имею, как эта хрень работает
 
     GLfloat cubeVertexArray[8][3] = {
         { SKY_SIZE,  SKY_SIZE, -SKY_SIZE},
@@ -305,25 +314,17 @@ void GUI_OpenGL::Sky::DoSkyBox(GLfloat Z) {
     // PRIMITIVE
 
     glVertexPointer(3, GL_FLOAT, 0, cubeVertexArray);
-    glColorPointer(3, GL_FLOAT, 0, cubeColorArray);
+    glColorPointer(4, GL_FLOAT, 0, cubeColorArray);
     glDrawElements(GL_QUADS, 24, GL_UNSIGNED_BYTE, cubeIndexArray);
 }
 
-void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius, GLfloat Z) {
+void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius) {
 
     // VARIABLE
 
     // color
 
     GLfloat         star_color[]        = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat         frontier            = 0.3f;
-
-    if (Z < -frontier)
-        star_color[3] = 1.0f;
-    if ((Z > -frontier) && (Z < frontier))
-        star_color[3] = - Z / (frontier * 2) + 0.5f;
-    if (Z > frontier)
-        star_color[3] = 0.0f;
 
     // PRIMITIVE
 
@@ -341,8 +342,7 @@ void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius, GLfloat Z) {
     glPopMatrix();
 }
 
-void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius, GLfloat Z,
-                             GLfloat Inner_Radius, quint8 Ray_num) {
+void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius, GLfloat Inner_Radius, quint8 Ray_num) {
 
     // VARIABLE
 
@@ -350,14 +350,6 @@ void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius, GLfloat Z,
 
     GLfloat             star_color[]        = {1.0f, 1.0f, 1.0f, 1.0f};
     qreal               st                  = M_PI * 2 / Ray_num;
-    GLfloat             frontier            = 0.3f;
-
-    if (Z < -frontier)
-        star_color[3] = 1.0f;
-    if ((Z > -frontier) && (Z < frontier))
-        star_color[3] = - Z / (frontier * 2) + 0.5f;
-    if (Z > frontier)
-        star_color[3] = 0.0f;
 
     // PRIMITIVE
 

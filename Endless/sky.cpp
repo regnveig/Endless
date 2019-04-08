@@ -134,21 +134,24 @@ Sky::Sky(QObject *parent) : QObject(parent) {
         StarPack->append({list.takeFirst(), StarType});
     }
 
-    Play();
+    Play(true);
 }
 
 Sky::~Sky() {
 
-    Pause();
+    Play(false);
 
     delete Timer_ID; Timer_ID = nullptr;
     delete Player; Player = nullptr;
     delete Sun; Sun = nullptr;
+    delete StarPack; StarPack = nullptr;
 }
 
-void Sky::Play() { *Timer_ID = startTimer(1); }
+void Sky::Play(bool play) {
 
-void Sky::Pause() { killTimer(*Timer_ID); }
+    if (play) *Timer_ID = startTimer(1);
+    else killTimer(*Timer_ID);
+}
 
 void Sky::timerEvent([[maybe_unused]] QTimerEvent *event) { Loop(); }
 
@@ -185,7 +188,12 @@ void Sky::Loop() {
         new_vect1.normalize();
         list.append({new_name, new_vect1, new_distance, new_angular_size});
     }
+
     std::sort(list.begin(), list.end(), CelestialSort);
+
+    emit Data(list);
+
+    QList<star> star_list;
 
     for (auto item = 0; item < StarPack->size(); item++) {
 
@@ -193,10 +201,10 @@ void Sky::Loop() {
                              QVector3D::dotProduct(StarPack->at(item).coord, System.axis_y),
                              QVector3D::dotProduct(StarPack->at(item).coord, System.axis_z));
         new_vect.normalize();
-        list.prepend({QString("star_") + QString::number(StarPack->at(item).type), new_vect, -1.0, -1.0});
+        star_list.append({new_vect, StarPack->at(item).type});
     }
 
-    emit Data(list);
+    emit Stars(star_list);
 }
 
 bool Sky::CelestialSort(const celestial_data &a, const celestial_data &b) { return a.distance > b.distance; }

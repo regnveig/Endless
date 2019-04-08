@@ -14,6 +14,7 @@ public:
 public slots:
 
     void                SkyData                     (QList<celestial_data> data);
+    void                StarsData                   (QList<star> data);
 
 protected:
 
@@ -30,9 +31,8 @@ private:
         static void         DoMoon                  (QVector3D vect, GLfloat Radius, GLfloat Z,
                                                      qreal Phase, qreal SunDirection);
         static void         DoSkyBox                (GLfloat Z);
-        static void         DoStar                  (QVector3D vect, GLfloat Radius, GLfloat Z);
-        static void         DoStar                  (QVector3D vect, GLfloat Radius, GLfloat Z,
-                                                     GLfloat Inner_Radius, quint8 Ray_num);
+        static void         DoStar                  (QVector3D vect, GLfloat Radius);
+        static void         DoStar                  (QVector3D vect, GLfloat Radius, GLfloat Inner_Radius, quint8 Ray_num);
         static void         DoSun                   (QVector3D vect, GLfloat Radius);
         static void         DoSunCorona             (QVector3D vect, GLfloat Radius);
         static void         PlaceSkylight           (QVector3D *vect);
@@ -43,6 +43,7 @@ private:
     void                    DrawSky();
 
     QList<celestial_data>   sky_data;
+    QList<star>             stars_data;
 
     GLfloat                 currentWidth,
                             currentHeight;

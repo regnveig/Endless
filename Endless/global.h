@@ -20,10 +20,16 @@
 
 struct celestial_data {
 
-    QString name;
-    QVector3D vect1;
-    float distance;
-    qreal angular_size;
+    QString     name;
+    QVector3D   vect1;
+    float       distance;
+    qreal       angular_size;
+};
+
+struct star {
+
+    QVector3D   coord;
+    quint8      type;
 };
 
 struct GlobalFunc {

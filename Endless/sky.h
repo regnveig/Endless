@@ -15,11 +15,11 @@ public:
 signals:
 
     void            Data            (QList<celestial_data>);
+    void            Stars           (QList<star>);
 
 public slots:
 
-    void            Play            ();
-    void            Pause           ();
+    void            Play            (bool play);
 
 protected:
 
@@ -42,12 +42,6 @@ private:
         QVector3D           axis_x,
                             axis_y,
                             axis_z;
-    };
-
-    struct Star {
-
-        QVector3D coord;
-        quint8 type;
     };
 
     class Celestial {
@@ -100,9 +94,9 @@ private:
     Celestial       *Earth          = new Celestial(Sun, QString("earth"),
                                                     {2500.0f, 1.0f, 0.0, 3.55e-06, 0.4, 9.6e-05}, 3.71, -1.0);
     Celestial       *Moon           = new Celestial(Earth, QString("moon"),
-                                                    {10.0f, 0.3f, 0.5, 2.48e-05, -0.4, 2.48e-05}, 0.0, 0.0);
+                                                    {10.0f, 0.3f, 0.5, 2.48e-05, -0.4, 2.48e-05}, 4.1, 0.0);
     Spectator       *Player         = new Spectator(Earth, 0.3, 0.0);
-    QList<Star>     *StarPack       = new QList<Star>();
+    QList<star>     *StarPack       = new QList<star>();
 };
 
 #endif // SKY_H

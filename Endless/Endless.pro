@@ -19,12 +19,14 @@ SOURCES += \
     global.cpp \
         main.cpp \
     gui_opengl.cpp \
-    sky.cpp
+    sky.cpp \
+    weather.cpp
 
 HEADERS += \
     gui_opengl.h \
     sky.h \
-    global.h
+    global.h \
+    weather.h
 
 qnx: target.path = /dev/my/MyDosc/temp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
