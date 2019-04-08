@@ -23,25 +23,23 @@ QVector3D GlobalFunc::MatrixRotate (QVector3D vect, qreal angle_x, qreal angle_y
 
 QList<QVector3D> GlobalFunc::SphericRandom(quint32 num, quint32 Seed) {
 
-    // Алгоритм взят отсюда: https://www.fundamental-research.ru/ru/article/view?id=31243.
-    // Огромное спасибо авторам.
-
-    QList<QVector3D> list;
-
-    QRandomGenerator general(Seed);
-
-    quint32 item = 0;
-
+    QList<QVector3D>    list;
+    QRandomGenerator    rand(Seed);
+    quint32             item = 0;
+    
     while (item < num) {
-        qreal azimuth = qreal(general.generate()) / QRandomGenerator::max() * 2 * M_PI;
-        qreal zenith = qreal(general.generate()) / QRandomGenerator::max() * M_PI;
-        if ((qreal(general.generate()) / QRandomGenerator::max()) < qSin(zenith)) {
+    
+        qreal azimuth = qreal(rand.generate()) / QRandomGenerator::max() * 2 * M_PI;
+        qreal zenith  = qreal(rand.generate()) / QRandomGenerator::max() * M_PI;
+            
+        if ((qreal(rand.generate()) / QRandomGenerator::max()) < qSin(zenith)) {
+            
             list.append(QVector3D(float(qSin(zenith) * qCos(azimuth)),
                                   float(qSin(zenith) * qSin(azimuth)),
                                   float(qCos(zenith))));
             item++;
         }
     }
-
+    
     return list;
 }
