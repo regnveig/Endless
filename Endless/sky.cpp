@@ -174,6 +174,8 @@ void Sky::Loop() {
     QList<Celestial *> Family = Sun->getFamily();
     Family.append(Sun);
 
+    QVector3D SunPos = Sun->getPosition() - Pos;
+
     for (auto item = 0; item < Family.size(); item++) {
 
         QString new_name = Family.at(item)->getName();
@@ -186,7 +188,14 @@ void Sky::Loop() {
                              QVector3D::dotProduct(new_coord, System.axis_y),
                              QVector3D::dotProduct(new_coord, System.axis_z));
         new_vect1.normalize();
-        list.append({new_name, new_vect1, new_distance, new_angular_size});
+
+        QVector3D toSpec = QVector3D(0.0f, 0.0f, 0.0f) - new_coord;
+        QVector3D toSun = SunPos - new_coord;
+        qreal new_phase = 0.0;
+        if (!toSun.isNull())
+            new_phase = qAcos(qreal(QVector3D::dotProduct(toSpec, toSun) / (toSpec.length() * toSun.length())));
+
+        list.append({new_name, new_vect1, new_distance, new_angular_size, new_phase});
     }
 
     std::sort(list.begin(), list.end(), CelestialSort);

@@ -24,6 +24,7 @@ struct celestial_data {
     QVector3D   vect1;
     float       distance;
     qreal       angular_size;
+    qreal       phase;
 };
 
 struct star {
