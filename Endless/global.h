@@ -36,7 +36,7 @@ struct star {
 struct GlobalFunc {
 
     static QVector3D        MatrixRotate        (QVector3D vect, qreal angle_x, qreal angle_y, qreal angle_z);
-    static QList<QVector3D> SphericRandom       (quint32 num, quint32 Seed);
+    static QVector3D        SphericRandom       (QRandomGenerator *rand);
 };
 
 #endif // GLOBAL_H

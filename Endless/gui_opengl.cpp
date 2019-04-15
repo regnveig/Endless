@@ -132,7 +132,7 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z,
     GLfloat             moon_edge_color[]       = {0.25f, 0.2f, 0.2f, 1.0f};
     GLfloat             moon_dot_color[]        = {0.7f, 0.65f, 0.65f, 1.0f};
     GLfloat             moon_color[]            = {0.97f, 0.95f, 0.95f, 1.0f};
-    GLfloat             moon_shadow_color[]     = {0.15f, 0.1f, 0.1f, 0.9f};
+    GLfloat             moon_shadow_color[]     = {0.15f, 0.1f, 0.1f, 0.8f};
     GLfloat             frontier                = 0.3f;
     GLfloat             alpha                   = 1.0f;
 
@@ -153,7 +153,7 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z,
     glPushMatrix();
     PlaceSkylight(&vect);
 
-    /*
+
     glBegin     (GL_POLYGON);
     glColor4fv  (moon_edge_color);
     glVertex3f  (0.0f, c2, SKY_SIZE);
@@ -163,7 +163,7 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z,
     glVertex3f  (-c2 * cx, -c2 * cy, SKY_SIZE);
     glVertex3f  (-c2 * cx, c2 * cy, SKY_SIZE);
     glEnd       ();
-    */
+
 
     glBegin     (GL_POLYGON);
     glColor4fv  (moon_color);
@@ -219,11 +219,11 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z,
     glVertex3f  (-(ct - cm) * cy, (ct + cm) * cx, SKY_SIZE);
     glVertex3f  (-(ct - cm) * cy, (ct - cm) * cx, SKY_SIZE);
     glEnd       ();
-    */
+*/
 
     // shadow
 
-    glBegin(GL_POLYGON);
+    /*glBegin(GL_POLYGON);
     glColor4fv (moon_shadow_color);
     glVertex3f((Radius * 0.68f * cx),
                (Radius * 0.68f * cy),
@@ -239,7 +239,7 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z,
                (Radius * 0.9f * cy),
                SKY_SIZE);
     glVertex3f(0.0f, (Radius * 0.8f), SKY_SIZE);
-    glEnd();
+    glEnd();*/
 
     glPopMatrix();
 }

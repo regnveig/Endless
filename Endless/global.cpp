@@ -21,25 +21,24 @@ QVector3D GlobalFunc::MatrixRotate(QVector3D vect, qreal angle_x, qreal angle_y,
     return vect;
 }
 
-QList<QVector3D> GlobalFunc::SphericRandom(quint32 num, quint32 Seed) {
+QVector3D GlobalFunc::SphericRandom(QRandomGenerator *rand) {
 
-    QList<QVector3D>    list;
-    QRandomGenerator    rand(Seed);
-    quint32             item = 0;
+    bool    trig        = true;
+    qreal   azimuth     = 0.0,
+            zenith      = 0.0,
+            f           = 0.0;
 
-    while (item < num) {
+    while (trig) {
 
-        qreal azimuth = qreal(rand.generate()) / QRandomGenerator::max() * 2 * M_PI;
-        qreal zenith  = qreal(rand.generate()) / QRandomGenerator::max() * M_PI;
+        azimuth = qreal(rand->generate()) / QRandomGenerator::max() * 2 * M_PI;
+        zenith  = qreal(rand->generate()) / QRandomGenerator::max() * M_PI;
+        f       = qreal(rand->generate()) / QRandomGenerator::max();
 
-        if ((qreal(rand.generate()) / QRandomGenerator::max()) < qSin(zenith)) {
-
-            list.append(QVector3D(float(qSin(zenith) * qCos(azimuth)),
-                                  float(qSin(zenith) * qSin(azimuth)),
-                                  float(qCos(zenith))));
-            item++;
-        }
+        if (f < qSin(zenith))
+            trig = false;
     }
 
-    return list;
+    return QVector3D(float(qSin(zenith) * qCos(azimuth)),
+                     float(qSin(zenith) * qSin(azimuth)),
+                     float(qCos(zenith)));
 }

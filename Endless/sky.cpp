@@ -124,14 +124,14 @@ Sky::Sky(QObject *parent) : QObject(parent) {
 
     quint32 StarNum = 500;
     quint8 StarType = 0;
+    QRandomGenerator rand(20);
 
-    QList<QVector3D> list = GlobalFunc::SphericRandom(StarNum, 20);
+    for (quint32 item = 0; item < StarNum; item++) {
 
-    while(!list.isEmpty()) {
-
-        if (list.size() < int(StarNum / 10)) StarType = 1;
-        if (list.size() < int(StarNum / 50)) StarType = 2;
-        StarPack->append({list.takeFirst(), StarType});
+        QVector3D vect = GlobalFunc::SphericRandom(&rand);
+        if (item > StarNum * 0.9) StarType = 1;
+        if (item > StarNum * 0.98) StarType = 2;
+        StarPack->append({vect, StarType});
     }
 
     Play(true);

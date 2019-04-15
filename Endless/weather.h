@@ -3,8 +3,6 @@
 
 #include "global.h"
 
-
-
 struct weather_data {
 
     enum class weather_type {
@@ -30,14 +28,17 @@ struct weather_data {
 class Cyclone {
 public:
 
-                    Cyclone();
+                    Cyclone         (qint8 new_strength, QVector3D new_eye_coord, quint32 new_life_time);
                     ~Cyclone();
+    bool            Tick            (QVector3D summar_power);
+    qint8           getStrength     ();
+    QVector3D       getEyeCoord     ();
 
 private:
 
-    qint8           strength;       // + for cyclone, - for anticyclone
-    QVector3D       eye_coord;
-    quint16         life_time;      // sec?
+    qint8           *strength       = new qint8();       // + for cyclone, - for anticyclone
+    QVector3D       *eye_coord      = new QVector3D();
+    quint32         *life_time      = new quint32();      // sec?
 };
 
 class Weather : public QObject {
@@ -64,7 +65,9 @@ protected:
 
 private:
 
-    float           Z;
+    float           *Z              = new float();
+    int             *Timer_ID       = new int();
+    QList<Cyclone>  *cyclones       = new QList<Cyclone>();
 };
 
 #endif // WEATHER_H
