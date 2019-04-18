@@ -149,7 +149,7 @@ Sky::~Sky() {
 
 void Sky::Play(bool play) {
 
-    if (play) *Timer_ID = startTimer(1);
+    if (play) *Timer_ID = startTimer(20);
     else killTimer(*Timer_ID);
 }
 

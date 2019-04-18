@@ -34,10 +34,11 @@ private:
         static void         DoStar                  (QVector3D vect, GLfloat Radius);
         static void         DoStar                  (QVector3D vect, GLfloat Radius, GLfloat Inner_Radius, quint8 Ray_num);
         static void         DoSun                   (QVector3D vect, GLfloat Radius);
-        static void         DoSunCorona             (QVector3D vect, GLfloat Radius);
+        static void         DoSunCorona             (QVector3D vect, GLfloat Radius, GLfloat Z);
         static void         PlaceSkylight           (QVector3D *vect);
 
         static constexpr GLfloat SKY_SIZE                = 5.0f;
+        static constexpr GLfloat SKY_BOTTOM              = -0.07f;
     };
 
     void                    DrawSky();
