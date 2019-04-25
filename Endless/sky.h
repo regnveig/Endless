@@ -14,8 +14,9 @@ public:
 
 signals:
 
-    void            Data            (QList<celestial_data>);
-    void            Stars           (QList<star>);
+    void            CelestialData   (QList<celestial_data>);
+    void            StarsData       (QList<star>);
+    void            GroundData      (ground_data);
 
 public slots:
 
@@ -57,6 +58,7 @@ private:
         QString             getName             ();
         QVector3D           getPosition         ();
         qreal               getTime             ();
+        qreal               getAngle            () { return *angle; }
         void                LoopFamily          ();
 
     private:
@@ -75,6 +77,8 @@ private:
         explicit            Spectator           (Celestial *new_ground, qreal new_latitude, qreal new_longitude);
                             ~Spectator          ();
         Celestial *         getGround           ();
+        qreal               getLatitude         () { return *latitude; }
+        qreal               getLongitude        () { return *longitude; }
         void                setPlace            (Celestial *new_ground, qreal new_latitude, qreal new_longitude);
         c_system            System              ();
 
@@ -87,7 +91,9 @@ private:
 
     static qreal    Angle           (qreal angle);
     static bool     CelestialSort   (const celestial_data &a, const celestial_data &b);
-    void            Loop            ();
+    void            SendCelestial   ();
+    void            SendGround      ();
+    void            SendStars       ();
     int             *Timer_ID       = new int();
     Celestial       *Sun            = new Celestial(nullptr, QString("sun"),
                                                     {0.0f, 100.0f, 0.0, 0.0, 0.0, 0.0}, 0.0, 0.0);

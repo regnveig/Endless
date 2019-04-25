@@ -41,7 +41,16 @@ void GUI_OpenGL::paintGL() {
    glRotatef(yAxisRotation, 0.0, 1.0, 0.0);
    glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
 
-   DrawSky();
+   //DrawSky();
+
+   for (auto &item : cyclone_data) {
+
+           QVector3D vect = item.vect;
+           GLfloat Radius = GLfloat(item.power * 3);
+           if (Radius >= 0)
+               Sky::DoStar(vect, Radius);
+           else Sky::DoSun(vect, qAbs(Radius));
+    }
 }
 
 void GUI_OpenGL::mousePressEvent(QMouseEvent *event) {
@@ -57,11 +66,16 @@ void GUI_OpenGL::mouseMoveEvent(QMouseEvent *event) {
     this->update();
 }
 
-void GUI_OpenGL::SkyData(QList<celestial_data> data) {
+void GUI_OpenGL::CelestialData(QList<celestial_data> data) {
 
     sky_data = data;
     this->update();
 };
+
+void GUI_OpenGL::WeatherData(QList<weather_data> data) {
+
+    cyclone_data = data;
+}
 
 void GUI_OpenGL::StarsData(QList<star> data) {
 

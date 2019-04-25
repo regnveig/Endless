@@ -28,8 +28,8 @@ int Sky::Celestial::AddChild(Celestial *child) {
 
     // Дополнительная проверка на кольца?
 
-    for (auto item = 0; item < children->size(); item++)
-        if (children->at(item) == child) return 1;
+    for (auto &item : *children)
+        if (item == child) return 1;
     children->append(child);
     return 0;
 }
@@ -39,8 +39,8 @@ Sky::celestial_const Sky::Celestial::getCelestialConst() { return *c_const; }
 QList<Sky::Celestial *> Sky::Celestial::getFamily() {
 
     QList<Celestial *> family = *children;
-    for (auto item = 0; item < children->size(); item++)
-        family.append(children->at(item)->getFamily());
+    for (auto &item : *children)
+        family.append(item->getFamily());
     return family;
 }
 
@@ -62,8 +62,8 @@ qreal Sky::Celestial::getTime() { return *time; }
 
 void Sky::Celestial::LoopFamily() {
 
-    for (auto item = 0; item < children->size(); item++)
-        children->at(item)->LoopFamily();
+    for (auto &item : *children)
+        item->LoopFamily();
 
     if (parent == nullptr) return;
 
@@ -149,11 +149,18 @@ Sky::~Sky() {
 
 void Sky::Play(bool play) {
 
-    if (play) *Timer_ID = startTimer(20);
+    if (play) *Timer_ID = startTimer(1);
     else killTimer(*Timer_ID);
 }
 
-void Sky::timerEvent([[maybe_unused]] QTimerEvent *event) { Loop(); }
+void Sky::timerEvent([[maybe_unused]] QTimerEvent *event) {
+
+    Sun->LoopFamily();
+
+    SendCelestial();
+    SendStars();
+    SendGround();
+}
 
 qreal Sky::Angle(qreal angle) {
 
@@ -164,9 +171,7 @@ qreal Sky::Angle(qreal angle) {
     return angle;
 }
 
-void Sky::Loop() {
-
-    Sun->LoopFamily();
+void Sky::SendCelestial() {
 
     QList<celestial_data> list;
     c_system System = Player->System();
@@ -176,13 +181,13 @@ void Sky::Loop() {
 
     QVector3D SunPos = Sun->getPosition() - Pos;
 
-    for (auto item = 0; item < Family.size(); item++) {
+    for (auto &item : Family) {
 
-        QString new_name = Family.at(item)->getName();
-        QVector3D new_coord = Family.at(item)->getPosition() - Pos;
+        QString new_name = item->getName();
+        QVector3D new_coord = item->getPosition() - Pos;
         float new_distance = new_coord.length();
         qreal new_angular_size =
-                2 * qAtan(qreal(Family.at(item)->getCelestialConst().radius / (2.0f * new_distance)));
+                2 * qAtan(qreal(item->getCelestialConst().radius / (2.0f * new_distance)));
 
         QVector3D new_vect1 (QVector3D::dotProduct(new_coord, System.axis_x),
                              QVector3D::dotProduct(new_coord, System.axis_y),
@@ -200,20 +205,33 @@ void Sky::Loop() {
 
     std::sort(list.begin(), list.end(), CelestialSort);
 
-    emit Data(list);
+    emit CelestialData(list);
+}
 
+void Sky::SendGround() {
+
+    qreal season = Player->getGround()->getAngle();
+    qreal latitude = Player->getLatitude();
+    qreal longitude = Player->getLongitude();
+
+    emit GroundData({season, latitude, longitude});
+}
+
+void Sky::SendStars() {
+
+    c_system System = Player->System();
     QList<star> star_list;
 
-    for (auto item = 0; item < StarPack->size(); item++) {
+    for (auto &item : *StarPack) {
 
-        QVector3D new_vect (QVector3D::dotProduct(StarPack->at(item).coord, System.axis_x),
-                             QVector3D::dotProduct(StarPack->at(item).coord, System.axis_y),
-                             QVector3D::dotProduct(StarPack->at(item).coord, System.axis_z));
+        QVector3D new_vect (QVector3D::dotProduct(item.coord, System.axis_x),
+                             QVector3D::dotProduct(item.coord, System.axis_y),
+                             QVector3D::dotProduct(item.coord, System.axis_z));
         new_vect.normalize();
-        star_list.append({new_vect, StarPack->at(item).type});
+        star_list.append({new_vect, item.type});
     }
 
-    emit Stars(star_list);
+    emit StarsData(star_list);
 }
 
 bool Sky::CelestialSort(const celestial_data &a, const celestial_data &b) { return a.distance > b.distance; }

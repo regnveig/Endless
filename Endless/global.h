@@ -18,6 +18,8 @@
 #include <QVector3D>
 #include <QWidget>
 
+static QRandomGenerator GLOBAL_RAND = QRandomGenerator();
+
 struct celestial_data {
 
     QString     name;
@@ -31,6 +33,19 @@ struct star {
 
     QVector3D   coord;
     quint8      type;
+};
+
+struct weather_data {
+
+    QVector3D   vect;
+    qreal       power;
+};
+
+struct ground_data {
+
+    qreal       season,
+                latitude,
+                longitude;
 };
 
 struct GlobalFunc {

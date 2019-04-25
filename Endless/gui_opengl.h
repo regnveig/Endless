@@ -13,8 +13,9 @@ public:
 
 public slots:
 
-    void                SkyData                     (QList<celestial_data> data);
+    void                CelestialData               (QList<celestial_data> data);
     void                StarsData                   (QList<star> data);
+    void                WeatherData                 (QList<weather_data> data);
 
 protected:
 
@@ -45,6 +46,7 @@ private:
 
     QList<celestial_data>   sky_data;
     QList<star>             stars_data;
+    QList<weather_data>     cyclone_data;
 
     GLfloat                 currentWidth,
                             currentHeight;
