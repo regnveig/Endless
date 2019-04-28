@@ -43,7 +43,7 @@ void Weather::timerEvent([[maybe_unused]] QTimerEvent *event) { Loop(); }
 
 void Weather::Play(bool play) {
 
-    if (play) *Timer_ID = startTimer(20);
+    if (play) *Timer_ID = startTimer(1);
     else killTimer(*Timer_ID);
 }
 
@@ -54,44 +54,54 @@ void Weather::GroundData(ground_data data) {
     *longitude = data.longitude;
 }
 
-void Weather::Loop() {
+bool Weather::newCyclone(Weather::Cyclone *cyclone, QRandomGenerator *rand) {
 
-    qreal   c_azimuth,
-            c_zenith,
-            c_f;
+    bool positive = rand->generate() > quint32(QRandomGenerator::max() / 2);
 
-    qreal   c_latitude;
+    qreal   c_azimuth = qreal(rand->generate()) / QRandomGenerator::max() * 2 * M_PI,
+            c_zenith  = qreal(rand->generate()) / QRandomGenerator::max() * M_PI,
+            c_f       = qreal(rand->generate()) / QRandomGenerator::max();
+
+    qreal   c_latitude = M_PI_2 - c_zenith;
+
     qreal   c_surface     = 1.0;
 
     for (auto &item : *CyclonePack)
         c_surface -= 0.25 * item.getPower();
     if (c_surface < 0) c_surface = 0;
 
-    c_azimuth = qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * 2 * M_PI;
-    c_zenith  = qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * M_PI;
-    c_f       = qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max();
+    qreal f_cyclone = Cyclone::RANDOM_COE * (qCos(c_latitude) * c_surface * qAbs(qSin(*season) * qSin(c_latitude)));
+    qreal f_anticyclone = Cyclone::RANDOM_COE * (qCos(c_latitude) * c_surface * qAbs(qCos(*season) * qCos(c_latitude * 2)));
 
-    c_latitude = M_PI_2 - c_zenith;
+    quint32 new_lifetime = quint32(Cyclone::MIN_LIFETIME +
+                                   (qreal(rand->generate()) / QRandomGenerator::max() *
+                                   (Cyclone::MAX_LIFETIME - Cyclone::MIN_LIFETIME)));
 
-    if (c_f < 0.1 * (qCos(c_latitude) * c_surface * qAbs(qSin(*season) * qSin(c_latitude))))
-        CyclonePack->append(Cyclone(quint32(qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * 1024),
-                                    qAbs(qSin(c_latitude) * 0.5),
-                                    QVector3D(float(qSin(c_zenith) * qCos(c_azimuth)),
-                                              float(qSin(c_zenith) * qSin(c_azimuth)),
-                                              float(qCos(c_zenith)))));
+    qreal new_power = qAbs(qSin(c_latitude)) * (positive ? 1.0 : -1.0); // в мелких циклонах power никогда не дойдёт до грозы.
 
-    c_azimuth = qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * 2 * M_PI;
-    c_zenith  = qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * M_PI;
-    c_f       = qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max();
+    QVector3D new_vect = QVector3D(float(qSin(c_zenith) * qCos(c_azimuth)),
+                                   float(qSin(c_zenith) * qSin(c_azimuth)),
+                                   float(qCos(c_zenith)));
 
-    c_latitude = M_PI_2 - c_zenith;
+    if (((c_f < f_cyclone) && positive) || ((c_f < f_anticyclone) && (!positive))) {
 
-    if (c_f < 0.1 * (qCos(c_latitude) * c_surface * qAbs(qCos(*season) * qCos(c_latitude * 2))))
-        CyclonePack->append(Cyclone(quint32(qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * 1024),
-                                    - qAbs(qSin(c_latitude) * 0.5),
-                                    QVector3D(float(qSin(c_zenith) * qCos(c_azimuth)),
-                                              float(qSin(c_zenith) * qSin(c_azimuth)),
-                                              float(qCos(c_zenith)))));
+        *cyclone = Cyclone(new_lifetime, new_power, new_vect);
+        return true;
+    }
+
+    return false;
+}
+
+void Weather::Loop() {
+
+    Cyclone *cyclone = new Cyclone(0, 0.0, QVector3D());
+    bool did = newCyclone(cyclone, GLOBAL_RAND);
+    if (did) {
+        CyclonePack->append(*cyclone);
+        delete cyclone;
+    }
+
+    cyclone = nullptr;
 
     for (auto &item : *CyclonePack) {
 
@@ -115,6 +125,8 @@ void Weather::Loop() {
 
     for (auto &item : *CyclonePack)
         list.append({item.getVect(), item.getPower()});
+
+    //qDebug() << CyclonePack->size();
 
     emit WeatherData(list);
 }

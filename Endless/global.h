@@ -18,7 +18,7 @@
 #include <QVector3D>
 #include <QWidget>
 
-static QRandomGenerator GLOBAL_RAND = QRandomGenerator();
+static QRandomGenerator *GLOBAL_RAND = new QRandomGenerator();
 
 struct celestial_data {
 

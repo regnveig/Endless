@@ -30,12 +30,16 @@ private:
     class Cyclone {
     public:
 
-        explicit            Cyclone             (quint32 new_lifetime, qreal new_power, QVector3D new_vect);
+                            Cyclone             (quint32 new_lifetime, qreal new_power, QVector3D new_vect);
                             ~Cyclone            ();
         void                Loop                (QVector3D force_summ);
         bool                Is                  ();
         qreal               getPower            ();
         QVector3D           getVect             ();
+
+        static const quint32       MIN_LIFETIME        = 128;
+        static const quint32       MAX_LIFETIME        = 1024;
+        static constexpr qreal     RANDOM_COE          = 0.1;
 
     private:
 
@@ -47,6 +51,7 @@ private:
     };
 
     void Loop();
+    bool newCyclone(Weather::Cyclone *cyclone, QRandomGenerator *rand);
 
     QList<Cyclone>  *CyclonePack    = new QList<Cyclone>();
 
