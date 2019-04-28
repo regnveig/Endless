@@ -9,7 +9,10 @@ Weather::Cyclone::~Cyclone() { }
 
 void Weather::Cyclone::Loop(QVector3D force_summ) {
 
-    vect += force_summ;
+    speed += force_summ;
+    speed.normalize();
+    speed /= 10;
+    vect += speed;
     vect.normalize();
     xtime++;
 }
@@ -40,7 +43,7 @@ void Weather::timerEvent([[maybe_unused]] QTimerEvent *event) { Loop(); }
 
 void Weather::Play(bool play) {
 
-    if (play) *Timer_ID = startTimer(1);
+    if (play) *Timer_ID = startTimer(20);
     else killTimer(*Timer_ID);
 }
 
@@ -72,7 +75,7 @@ void Weather::Loop() {
 
     if (c_f < 0.1 * (qCos(c_latitude) * c_surface * qAbs(qSin(*season) * qSin(c_latitude))))
         CyclonePack->append(Cyclone(quint32(qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * 1024),
-                                    qAbs(qSin(c_latitude)),
+                                    qAbs(qSin(c_latitude) * 0.5),
                                     QVector3D(float(qSin(c_zenith) * qCos(c_azimuth)),
                                               float(qSin(c_zenith) * qSin(c_azimuth)),
                                               float(qCos(c_zenith)))));
@@ -85,7 +88,7 @@ void Weather::Loop() {
 
     if (c_f < 0.1 * (qCos(c_latitude) * c_surface * qAbs(qCos(*season) * qCos(c_latitude * 2))))
         CyclonePack->append(Cyclone(quint32(qreal(GLOBAL_RAND.generate()) / QRandomGenerator::max() * 1024),
-                                    - qAbs(qSin(c_latitude)),
+                                    - qAbs(qSin(c_latitude) * 0.5),
                                     QVector3D(float(qSin(c_zenith) * qCos(c_azimuth)),
                                               float(qSin(c_zenith) * qSin(c_azimuth)),
                                               float(qCos(c_zenith)))));
@@ -93,8 +96,13 @@ void Weather::Loop() {
     for (auto &item : *CyclonePack) {
 
         QVector3D force_summ = QVector3D(0.0f, 0.0f, 0.0f);
-        for (auto &item2 : *CyclonePack)
-            force_summ += (item.getVect() - item2.getVect()); // Сделать обратную зависимость, ввести скорость и ускорение для циклонов
+
+        for (auto &item2 : *CyclonePack) {
+
+            QVector3D v = item.getVect() - item2.getVect();
+            if (v.length() != 0.0f) v = v / v.length(); // Ввести компонент "веса" циклона
+            force_summ += v;
+        }
         item.Loop(force_summ);
     }
 

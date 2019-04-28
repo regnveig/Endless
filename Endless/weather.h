@@ -42,7 +42,8 @@ private:
         quint32             xtime = 0,
                             lifetime;
         qreal               power;
-        QVector3D           vect;
+        QVector3D           vect,
+                            speed = QVector3D(0.0f, 0.0f, 0.0f);
     };
 
     void Loop();
@@ -50,9 +51,9 @@ private:
     QList<Cyclone>  *CyclonePack    = new QList<Cyclone>();
 
     int             *Timer_ID       = new int();
-    qreal           *season          = new qreal(0.0),
-                    *longitude       = new qreal(0.0),
-                    *latitude        = new qreal(0.0);
+    qreal           *season         = new qreal(0.0),
+                    *longitude      = new qreal(0.0),
+                    *latitude       = new qreal(0.0);
 };
 
 #endif // WEATHER_H
