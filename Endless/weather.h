@@ -30,7 +30,7 @@ private:
     class Cyclone {
     public:
 
-                            Cyclone             (quint32 new_lifetime, qreal new_power, QVector3D new_vect);
+        explicit            Cyclone             (quint32 new_lifetime, qreal new_power, QVector3D new_vect);
                             ~Cyclone            ();
         void                Loop                (QVector3D force_summ);
         bool                Is                  ();

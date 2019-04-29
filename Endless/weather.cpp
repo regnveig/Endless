@@ -96,11 +96,9 @@ void Weather::Loop() {
 
     Cyclone *cyclone = new Cyclone(0, 0.0, QVector3D());
     bool did = newCyclone(cyclone, GLOBAL_RAND);
-    if (did) {
-        CyclonePack->append(*cyclone);
-        delete cyclone;
-    }
+    if (did) CyclonePack->append(*cyclone);
 
+    delete cyclone;
     cyclone = nullptr;
 
     for (auto &item : *CyclonePack) {
@@ -126,7 +124,7 @@ void Weather::Loop() {
     for (auto &item : *CyclonePack)
         list.append({item.getVect(), item.getPower()});
 
-    //qDebug() << CyclonePack->size();
+    qDebug() << CyclonePack->size();
 
     emit WeatherData(list);
 }
