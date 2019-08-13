@@ -10,13 +10,13 @@ GUI_OpenGL::GUI_OpenGL(QWidget *parent) : QOpenGLWidget(parent) {
 
 void GUI_OpenGL::initializeGL() {
 
-   glShadeModel(GL_SMOOTH);
-   glEnable(GL_CULL_FACE);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-   glEnable(GL_BLEND);
-   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-   glEnableClientState(GL_VERTEX_ARRAY);
-   glEnableClientState(GL_COLOR_ARRAY);
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_CULL_FACE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_BLEND);
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
 }
 
 void GUI_OpenGL::resizeGL(int nWidth, int nHeight) {
@@ -32,25 +32,16 @@ void GUI_OpenGL::resizeGL(int nWidth, int nHeight) {
 
 void GUI_OpenGL::paintGL() {
 
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
-   glOrtho(-1.5, 1.5, -1.5, 1.5, -20.0, 20.0);
-   glRotatef(yAxisRotation, 0.0, 1.0, 0.0);
-   glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
+    glOrtho(-1.5, 1.5, -1.5, 1.5, -20.0, 20.0);
+    glRotatef(yAxisRotation, 0.0, 1.0, 0.0);
+    glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
 
-   DrawSky();
-
-//   for (auto &item : cyclone_data) {
-
-//           QVector3D vect = item.vect;
-//           GLfloat Radius = GLfloat(item.power * 3);
-//           if (Radius >= 0)
-//               Sky::DoStar(vect, Radius);
-//           else Sky::DoSun(vect, qAbs(Radius));
-//    }
+    DrawSky();
 }
 
 void GUI_OpenGL::mousePressEvent(QMouseEvent *event) {
@@ -66,18 +57,13 @@ void GUI_OpenGL::mouseMoveEvent(QMouseEvent *event) {
     this->update();
 }
 
-void GUI_OpenGL::CelestialData(QList<celestial_data> data) {
+void GUI_OpenGL::CelestialData(QList<CelestialInfo> data) {
 
     sky_data = data;
     this->update();
 };
 
-void GUI_OpenGL::WeatherData(QList<weather_data> data) {
-
-    cyclone_data = data;
-}
-
-void GUI_OpenGL::StarsData(QList<star> data) {
+void GUI_OpenGL::StarsData(QList<StarInfo> data) {
 
     stars_data = data;
 };
@@ -144,7 +130,7 @@ void GUI_OpenGL::Sky::DoMoon(QVector3D vect, GLfloat Radius, GLfloat Z,
     const GLfloat           tri_center          = GLfloat(1 / qSqrt(3));
 
     GLfloat                 c1                  = Radius * 0.9f;
-   [[maybe_unused]] GLfloat c2                  = Radius;
+    [[maybe_unused]] GLfloat c2                  = Radius;
     GLfloat                 ct                  = c1 * tri_center;
     GLfloat                 cs                  = Radius * 0.1f;
     GLfloat                 cm                  = Radius * 0.25f;
@@ -383,15 +369,15 @@ void GUI_OpenGL::Sky::DoStar(QVector3D vect, GLfloat Radius, GLfloat Inner_Radiu
         glBegin     (GL_QUADS);
         glColor4fv  (star_color);
         glVertex3f  (GLfloat(qSin((i + 1) * st)) * Inner_Radius,
-                     GLfloat(qCos((i + 1) * st)) * Inner_Radius,
-                     SKY_SIZE);
+                   GLfloat(qCos((i + 1) * st)) * Inner_Radius,
+                   SKY_SIZE);
         glVertex3f  (0.0f, 0.0f, SKY_SIZE);
         glVertex3f  (GLfloat(qSin(i * st)) * Inner_Radius,
-                     GLfloat(qCos(i * st)) * Inner_Radius,
-                     SKY_SIZE);
+                   GLfloat(qCos(i * st)) * Inner_Radius,
+                   SKY_SIZE);
         glVertex3f  (GLfloat(qSin((i + 0.5) * st)) * Radius,
-                     GLfloat(qCos((i + 0.5) * st)) * Radius,
-                     SKY_SIZE);
+                   GLfloat(qCos((i + 0.5) * st)) * Radius,
+                   SKY_SIZE);
         glEnd       ();
     }
 
@@ -559,7 +545,7 @@ void GUI_OpenGL::Sky::PlaceSkylight(QVector3D *vect) {
 
     GLfloat zenith = GLfloat(qRadiansToDegrees(qAcos(qreal(vect->z()))));
     GLfloat azimuth = GLfloat(qRadiansToDegrees(((vect->x() < 0) ? (-1) : 1)
-                      * qAcos(qreal(vect->y()) / qSqrt(qPow(qreal(vect->x()), 2) + qPow(qreal(vect->y()), 2)))));
+                                                * qAcos(qreal(vect->y()) / qSqrt(qPow(qreal(vect->x()), 2) + qPow(qreal(vect->y()), 2)))));
 
     glRotatef   (-90.0, 1.0, 0.0, 0.0);
     glRotatef   (90 - azimuth, 0.0, 0.0, 1.0);
