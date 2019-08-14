@@ -1,8 +1,8 @@
 #include "sky.h"
 
-bool CelestialSort(const CelestialInfo &a, const CelestialInfo &b) { return a.distance > b.distance; }
+bool Sky::CelestialSort(const CelestialInfo &a, const CelestialInfo &b) { return a.distance > b.distance; }
 
-QVector3D MatrixRotate(QVector3D vect, qreal angle_x, qreal angle_y, qreal angle_z) {
+QVector3D Sky::MatrixRotate(QVector3D vect, qreal angle_x, qreal angle_y, qreal angle_z) {
 
     // Это древняя магия под названием "матрица поворота". Она просто работает, и неважно, как
 
@@ -23,14 +23,14 @@ QVector3D MatrixRotate(QVector3D vect, qreal angle_x, qreal angle_y, qreal angle
     return vect;
 }
 
-qreal Angle(qreal angle) {
+qreal Sky::Angle(qreal angle) {
 
     if (angle >= (2 * M_PI)) return (angle - (qFloor(angle / (2 * M_PI)) * 2 * M_PI));
     if (angle < 0) return (angle + (qCeil(qFabs(angle / (2 * M_PI))) * 2 * M_PI));
     return angle;
 }
 
-QVector3D SphericRandom(QRandomGenerator *rand) {
+QVector3D Sky::SphericRandom(QRandomGenerator *rand) {
 
     bool trig = true;
     qreal azimuth = 0.0, zenith = 0.0, f = 0.0;
@@ -49,7 +49,7 @@ QVector3D SphericRandom(QRandomGenerator *rand) {
                      float(qCos(zenith)));
 }
 
-Celestial::Celestial(Celestial * new_parent, QString new_id, float new_distance, float new_radius,
+Sky::Celestial::Celestial(Celestial * new_parent, QString new_id, float new_distance, float new_radius,
           qreal new_ecliptic, qreal new_axis, qreal new_speed,
           qreal new_rotation, qreal new_date, qreal new_time) : id(new_id),
     distance(new_distance),
@@ -57,14 +57,14 @@ Celestial::Celestial(Celestial * new_parent, QString new_id, float new_distance,
     speed(new_speed), rotation(new_rotation), date(new_date),
     time(new_time) { parent = new_parent; if (parent != nullptr) parent->AddChild(this); }
 
-Celestial::~Celestial() {
+Sky::Celestial::~Celestial() {
 
     while(!children.isEmpty())
         delete children.takeFirst();
     parent = nullptr;
 };
 
-int Celestial::AddChild(Celestial *child) {
+int Sky::Celestial::AddChild(Celestial *child) {
 
     for (auto &item : children)
         if (item == child) return 1;
@@ -72,7 +72,7 @@ int Celestial::AddChild(Celestial *child) {
     return 0;
 }
 
-QList<Celestial *> Celestial::getFamily() {
+QList<Sky::Celestial *> Sky::Celestial::getFamily() {
 
     QList<Celestial *> family = children;
     for (auto &item : children)
@@ -80,7 +80,7 @@ QList<Celestial *> Celestial::getFamily() {
     return family;
 }
 
-QVector3D Celestial::getPosition() {
+QVector3D Sky::Celestial::getPosition() {
 
     if (parent == nullptr)
         return {0.0, 0.0, 0.0};
@@ -92,15 +92,15 @@ QVector3D Celestial::getPosition() {
     return {ppos + d};
 }
 
-void Celestial::LoopFamily() {
+void Sky::Celestial::LoopFamily() {
 
     for (auto &item : children)
         item->LoopFamily();
 
     if (parent == nullptr) return;
 
-    date = Angle(date + speed);
-    time = Angle(time + rotation);
+    date = Sky::Angle(date + speed);
+    time = Sky::Angle(time + rotation);
 }
 
 Sky::Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *parent) : QObject(parent), Timer_interval(TimerInterval), Saver_interval(SaverInterval) {
@@ -255,6 +255,7 @@ void Sky::SendStars() {
     System3D System_ = System();
     QList<StarInfo> star_list;
 
+    if (Stars_on) {
     for (auto &item : StarPack) {
 
         QVector3D new_vect (QVector3D::dotProduct(item.coord, System_.axis_x),
@@ -262,6 +263,7 @@ void Sky::SendStars() {
                            QVector3D::dotProduct(item.coord, System_.axis_z));
         new_vect.normalize();
         star_list.append({new_vect, item.type});
+    }
     }
 
     emit StarsData(star_list);
@@ -295,11 +297,26 @@ void Sky::Save() {
     QSqlQuery query;
     for (auto item: CelestialPack) {
         QString q = "UPDATE endl3ss_sky_celestial SET date = " + QString::number(item->getDate()) + ", "
-                    "time = " + QString::number(item->getTime()) + " WHERE id = '" + item->getID() + "';";
-        query.exec(q);
+                    "time = " + QString::number(item->getTime()) + " WHERE id = '" + item->getID() + "'; ";
+        if (!query.exec(q)) qDebug() << query.lastError().text();
     }
-    QString q = "UPDATE endl3ss_sky_celestial SET ground = " + ground->getID() + ", "
-                "longitude = " + QString::number(longitude) + ", latitude = " + QString::number(latitude) + " "
-                "WHERE row_id = 1;";
+    QString q = "UPDATE endl3ss_sky_spectator SET ground = '" + ground->getID() + "', "
+                "longitude = " + QString::number(longitude) + ", latitude = " + QString::number(latitude) + ";";
     query.exec(q);
+    if (!query.exec(q)) qDebug() << query.lastError().text();
+}
+
+void Sky::Console(QString var, QString value) {
+
+    if (var == "stars") {
+        if (value == "on") { Stars_on = true; emit ConsoleOutput("Sky: Stars are on"); return; }
+        if (value == "off") { Stars_on = false; emit ConsoleOutput("Sky: Stars are off"); return; }
+    }
+
+    for (auto item: CelestialPack) {
+        if (var == item->getID() + ".date") { item->setDate(Angle(qreal(value.toDouble()))); emit ConsoleOutput("Sky: Date of " + item->getID() + " is changed: " + QString::number(item->getDate())); return; }
+        if (var == item->getID() + ".time") { item->setTime(Angle(qreal(value.toDouble()))); emit ConsoleOutput("Sky: Time of " + item->getID() + " is changed: " + QString::number(item->getTime())); return; }
+    }
+    Save();
+    emit ConsoleOutput("Sky: Unknown variable: " + var);
 }
