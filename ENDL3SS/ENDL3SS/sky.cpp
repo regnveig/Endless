@@ -55,7 +55,11 @@ Sky::Celestial::Celestial(Celestial * new_parent, QString new_id, float new_dist
     distance(new_distance),
     radius(new_radius), ecliptic(new_ecliptic), axis(new_axis),
     speed(new_speed), rotation(new_rotation), date(new_date),
-    time(new_time) { parent = new_parent; if (parent != nullptr) parent->AddChild(this); }
+    time(new_time) {
+
+    parent = new_parent;
+    if (parent != nullptr) parent->AddChild(this);
+}
 
 Sky::Celestial::~Celestial() {
 
@@ -110,7 +114,7 @@ Sky::Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *pa
     saved_db.setDatabaseName(saved_file.absoluteFilePath());
 
     if (!saved_db.open()) {
-        qCritical() << saved_db.lastError().text();
+        emit ConsoleOutput(saved_db.lastError().text());
         throw QException();
     }
 
@@ -143,6 +147,7 @@ Sky::Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *pa
                   qreal(query.value(9).toDouble()));
 
         CelestialPack.append(new_celestial);
+        qInfo() << "Sky: " + new_celestial->getID() + " is created";
     }
 
     // Create stars
@@ -164,6 +169,13 @@ Sky::Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *pa
         if (item > StarNum * (1 - query.value(3).toDouble())) StarType = 2;
         StarPack.append({vect, StarType});
     }
+    Stars_on = query.value(4).toInt() == 1 ? true : false;
+
+    qInfo() <<"Sky: " + QString::number(StarNum) +
+                   " stars are created [seed " + QString::number(query.value(1).toInt()) +
+                   "]. T1 limit = " + QString::number(query.value(2).toDouble()) +
+                   ", T2 limit = " + QString::number(query.value(3).toDouble());
+    qInfo() << "Sky: Stars are " + QString(Stars_on ? "on" : "off");
 
     // Create Spectator
 
@@ -181,6 +193,10 @@ Sky::Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *pa
 
     longitude = qreal(query.value(1).toDouble());
     latitude = qreal(query.value(2).toDouble());
+
+    qInfo() << "Sky: You are " + ground->getID() +
+                   " dweller [" + QString::number(latitude) +
+                   ":" + QString::number(longitude) + "]";
 
     Play(true);
 
@@ -302,7 +318,8 @@ void Sky::Save() {
     }
     QString q = "UPDATE endl3ss_sky_spectator SET ground = '" + ground->getID() + "', "
                 "longitude = " + QString::number(longitude) + ", latitude = " + QString::number(latitude) + ";";
-    query.exec(q);
+    if (!query.exec(q)) qDebug() << query.lastError().text();
+    q = "UPDATE endl3ss_sky_stars SET stars_on = " + QString::number(Stars_on ? 1 : 0 ) + ";";
     if (!query.exec(q)) qDebug() << query.lastError().text();
 }
 

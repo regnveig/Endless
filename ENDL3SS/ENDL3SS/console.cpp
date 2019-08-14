@@ -12,12 +12,14 @@ Console::~Console() { delete ui; }
 void Console::ConsoleOutput(QString message) {
     ui->ConsoleScreen->setTextColor(QColor(0, 0, 255));
     ui->ConsoleScreen->append(message);
+    qInfo() << message;
 }
 
 void Console::SendCommand() {
 
     ui->ConsoleScreen->setTextColor(QColor(0, 0, 0));
     ui->ConsoleScreen->append(">> " + ui->CommandLine->text());
+    qInfo() << ">> " + ui->CommandLine->text();
     ui->ConsoleScreen->setTextColor(QColor(0, 0, 255));
     QStringList command = ui->CommandLine->text().split(" ");
     ui->CommandLine->clear();

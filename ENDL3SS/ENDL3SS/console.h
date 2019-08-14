@@ -2,6 +2,7 @@
 #define CONSOLE_H
 
 #include <QMainWindow>
+#include <QDebug>
 
 namespace Ui { class Console; }
 

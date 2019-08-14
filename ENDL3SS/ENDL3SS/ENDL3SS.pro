@@ -1,6 +1,6 @@
 QT       += core gui widgets opengl sql
 
-TARGET = Endless
+TARGET = ENDL3SS
 TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS

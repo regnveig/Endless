@@ -7,10 +7,10 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    QFileInfo saved("./save/sky.module");
+    QFileInfo saved("./saved/sky.module");
 
     GUI_OpenGL w;
-    Sky *sky = new Sky(saved, 1, 30000);
+    Sky *sky = new Sky(saved, 10, 30000);
     w.show();
 
     Console console;
