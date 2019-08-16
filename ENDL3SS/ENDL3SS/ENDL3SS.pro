@@ -12,7 +12,8 @@ SOURCES += \
         console.cpp \
         gui_opengl.cpp \
         main.cpp \
-        sky.cpp
+        sky.cpp \
+        weather.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -23,7 +24,8 @@ HEADERS += \
     console.h \
     global.h \
     gui_opengl.h \
-    sky.h
+    sky.h \
+    weather.h
 
 FORMS += \
     console.ui

@@ -41,16 +41,16 @@ void GUI_OpenGL::paintGL() {
    glRotatef(yAxisRotation, 0.0, 1.0, 0.0);
    glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
 
-   DrawSky();
+   //DrawSky();
 
-//   for (auto &item : cyclone_data) {
+   for (auto &item : cyclone_data) {
 
-//           QVector3D vect = item.vect;
-//           GLfloat Radius = GLfloat(item.power * 3);
-//           if (Radius >= 0)
-//               Sky::DoStar(vect, Radius);
-//           else Sky::DoSun(vect, qAbs(Radius));
-//    }
+           QVector3D vect = item.vect;
+           GLfloat Radius = GLfloat(item.power * 3);
+           if (Radius >= 0)
+               Sky::DoStar(vect, Radius);
+           else Sky::DoSun(vect, qAbs(Radius));
+    }
 }
 
 void GUI_OpenGL::mousePressEvent(QMouseEvent *event) {
