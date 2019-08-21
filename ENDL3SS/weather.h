@@ -13,6 +13,7 @@
 #include <QVector3D>
 #include <QRandomGenerator>
 #include <QTimerEvent>
+#include <QMutableListIterator>
 
 #include "global.h"
 
@@ -23,18 +24,21 @@ constexpr qreal SPEED_LOWERING = 10;
 const quint8 MATRIX_SIDE = 3;
 constexpr qreal POWER_LOWERING = 1;
 const float WIND_LOWERING = 1;
+constexpr qreal MASS_LOWERING = 1;
 
 struct MatrixCell { qreal power; QVector3D wind; };
 
 class Cyclone {
 public:
-    explicit Cyclone();
+    explicit Cyclone(quint64 new_lifetime, QVector3D new_place, bool new_isCyclone);
     ~Cyclone();
 
     void Loop(QVector3D force_summ);
     bool exists();
 
     MatrixCell getMatrixCellByPoint(QVector3D spectator);
+    qreal getPower();
+    QVector3D getPlace();
 
 private:
     quint64 lifetime, time_passed = 0;
@@ -61,6 +65,7 @@ public slots:
     void Play(bool play);
     void Save();
     void Console(QString var, QString value);
+    void CelestialData(QList<CelestialInfo> data);
 
 protected:
 
@@ -68,15 +73,20 @@ protected:
 
 private:
 
+    bool newCyclone(Cyclone *cyclone);
+    void LoopCyclone();
     QList<Cyclone *> CyclonePack;
+    QString ground;
+    qreal season;
     qreal longitude, latitude;
 
-    int Timer_ID, Saver_ID;
-    int Timer_interval, Saver_interval;
+    int Timer_ID, Saver_ID, CycloneTimer_ID;
+    int Timer_interval, Saver_interval, CycloneTimer_Interval;
 
     MatrixCell Matrix[MATRIX_SIDE][MATRIX_SIDE];
 
     QSqlDatabase saved_db = QSqlDatabase::addDatabase("QSQLITE");
+    QRandomGenerator rand;
 
 };
 

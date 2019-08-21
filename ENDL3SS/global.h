@@ -11,6 +11,7 @@ struct CelestialInfo {
     float       distance;
     qreal       angular_size;
     qreal       phase;
+    qreal       season;
 };
 
 struct StarInfo {

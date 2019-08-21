@@ -22,7 +22,7 @@ class Sky : public QObject {
 
 public:
 
-    explicit Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *parent = nullptr);
+    explicit Sky(QFileInfo saved_file, QObject *parent = nullptr);
     ~Sky() override;
 
     static qreal Angle(qreal angle);

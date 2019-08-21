@@ -107,7 +107,7 @@ void Sky::Celestial::LoopFamily() {
     time = Sky::Angle(time + rotation);
 }
 
-Sky::Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *parent) : QObject(parent), Timer_interval(TimerInterval), Saver_interval(SaverInterval) {
+Sky::Sky(QFileInfo saved_file, QObject *parent) : QObject(parent) {
 
     // Open DB
 
@@ -119,6 +119,17 @@ Sky::Sky(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *pa
     }
 
     QSqlQuery query;
+
+    // Timers
+
+    if (!query.exec("SELECT * FROM endl3ss_sky_timers")) {
+        qCritical() << saved_db.lastError().text();
+        throw QException();
+    }
+
+    query.next();
+    Timer_interval = query.value(0).toInt();
+    Saver_interval = query.value(1).toInt();
 
     // Create Celestial
 
@@ -257,7 +268,8 @@ void Sky::SendCelestial() {
         if (!toSun.isNull())
             new_phase = qAcos(qreal(QVector3D::dotProduct(toSpec, toSun) / (toSpec.length() * toSun.length())));
 
-        list.append({new_name, new_vect1, new_distance, new_angular_size, new_phase});
+        qreal new_season = ground->getDate();
+        list.append({new_name, new_vect1, new_distance, new_angular_size, new_phase, new_season});
     }
 
     std::sort(list.begin(), list.end(), CelestialSort);
