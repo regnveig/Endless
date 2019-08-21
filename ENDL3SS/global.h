@@ -4,6 +4,14 @@
 #include <QString>
 #include <QVector3D>
 
+// ------- Debug -------
+struct weather_data {
+
+    QVector3D   vect;
+    qreal       power;
+};
+// ---------------------
+
 struct CelestialInfo {
 
     QString     name;

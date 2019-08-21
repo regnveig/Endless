@@ -25,6 +25,9 @@ int main(int argc, char *argv[])
 
     a.connect(sky, SIGNAL(ConsoleOutput(QString)), &console, SLOT(ConsoleOutput(QString)));
     a.connect(&console, SIGNAL(SkyConsole(QString, QString)), sky, SLOT(Console(QString, QString)));
+    // debug
+    a.connect(weather, SIGNAL(WeatherData(QList<weather_data>)), &w, SLOT(WeatherData(QList<weather_data>)));
+    // -----
 
     return a.exec();
 }

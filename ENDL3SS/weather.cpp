@@ -226,8 +226,11 @@ void Weather::LoopCyclone() {
         for (auto &item2 : CyclonePack)
             if (item != item2) {
                 QVector3D plus = item->getPlace() - item2->getPlace();
-                plus *= float(qAbs(MASS_LOWERING * item2->getLifetime() / item->getLifetime()));
-                force_summ += plus;
+                float r2 = plus.lengthSquared();
+                if (r2 != 0.0f) {
+                plus.normalize();
+                plus *= float(qAbs(MASS_LOWERING * item2->getLifetime() / item->getLifetime()) / r2);
+                force_summ += plus; }
             }
 
         item->Loop(force_summ);
@@ -244,6 +247,15 @@ void Weather::LoopCyclone() {
         }
     }
 
-    qDebug() << CyclonePack.size();
+    // ----------- Debug ------------
+    QList<weather_data> list;
+
+       for (auto &item : CyclonePack)
+           list.append({item->getPlace(), item->getPower()});
+
+       qDebug() << CyclonePack.size();
+
+       emit WeatherData(list);
+    // ------------------------------
 
 }

@@ -32,7 +32,9 @@ public slots:
 
     void                CelestialData               (QList<CelestialInfo> data);
     void                StarsData                   (QList<StarInfo> data);
-
+    // -------- Debug ----------
+    void                WeatherData                 (QList<weather_data> data);
+    // -------------------------
 protected:
 
     void                 initializeGL                () override;
@@ -69,7 +71,9 @@ private:
     QPoint                  releasePosition;
     GLfloat                 xAxisRotation,
                             yAxisRotation;
-
+    // debug
+    QList<weather_data>     cyclone_data;
+    // ------
 };
 
 #endif // GUI_OPENGL_H

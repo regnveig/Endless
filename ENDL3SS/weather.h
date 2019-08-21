@@ -20,11 +20,11 @@
 const quint32 MIN_LIFETIME = 128;
 const quint32 MAX_LIFETIME = 1024;
 constexpr qreal RANDOM_COE = 0.1;
-constexpr qreal SPEED_LOWERING = 10;
+constexpr qreal SPEED_LOWERING = 100;
 const quint8 MATRIX_SIDE = 3;
 constexpr qreal POWER_LOWERING = 1;
 const float WIND_LOWERING = 1;
-constexpr qreal MASS_LOWERING = 0.01;
+constexpr qreal MASS_LOWERING = 1;
 
 struct MatrixCell { qreal power; QVector3D wind; };
 
@@ -63,6 +63,9 @@ signals:
 
     void WeatherData();
     void ConsoleOutput(QString message);
+    // -------- Debug ----------
+    void                WeatherData                 (QList<weather_data> data);
+    // -------------------------
 
 public slots:
 

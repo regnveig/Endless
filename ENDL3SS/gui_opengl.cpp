@@ -42,7 +42,27 @@ void GUI_OpenGL::paintGL() {
     glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
 
     DrawSky();
+
+    // ---------- Debug -------------
+    for (auto &item : cyclone_data) {
+
+               QVector3D vect = item.vect;
+               GLfloat Radius = GLfloat(item.power);
+               if (Radius >= 0)
+                   Sky::DoStar(vect, Radius);
+               else Sky::DoSun(vect, qAbs(Radius));
+        }
+    // ------------------------------
 }
+
+// Debug
+
+void GUI_OpenGL::WeatherData(QList<weather_data> data) {
+
+    cyclone_data = data;
+}
+
+// ------
 
 void GUI_OpenGL::mousePressEvent(QMouseEvent *event) {
 
