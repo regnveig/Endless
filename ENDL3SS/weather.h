@@ -24,14 +24,13 @@ constexpr qreal SPEED_LOWERING = 10;
 const quint8 MATRIX_SIDE = 3;
 constexpr qreal POWER_LOWERING = 1;
 const float WIND_LOWERING = 1;
-constexpr qreal MASS_LOWERING = 1;
+constexpr qreal MASS_LOWERING = 0.01;
 
 struct MatrixCell { qreal power; QVector3D wind; };
 
 class Cyclone {
 public:
-    explicit Cyclone(quint64 new_lifetime, QVector3D new_place, bool new_isCyclone);
-    ~Cyclone();
+    explicit Cyclone(quint64 new_lifetime, quint64 new_time_passed, QVector3D new_place, QVector3D new_speed, bool new_isCyclone);
 
     void Loop(QVector3D force_summ);
     bool exists();
@@ -40,9 +39,14 @@ public:
     qreal getPower();
     QVector3D getPlace();
 
+    quint64 getLifetime() { return lifetime; }
+    quint64 getTimePassed() { return time_passed; }
+    QVector3D getSpeed() { return speed; }
+    bool getIsCyclone() { return isCyclone; }
+
 private:
-    quint64 lifetime, time_passed = 0;
-    QVector3D place, speed = QVector3D(0.0f, 0.0f, 0.0f);
+    quint64 lifetime, time_passed;
+    QVector3D place, speed;
     bool isCyclone;
 };
 
@@ -52,7 +56,7 @@ class Weather : public QObject {
 
 public:
 
-    explicit Weather(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *parent = nullptr);
+    explicit Weather(QFileInfo saved_file, QObject *parent = nullptr);
     ~Weather() override;
 
 signals:
@@ -81,11 +85,12 @@ private:
     qreal longitude, latitude;
 
     int Timer_ID, Saver_ID, CycloneTimer_ID;
-    int Timer_interval, Saver_interval, CycloneTimer_Interval;
+    int Timer_interval, Saver_interval, CycloneTimer_interval;
 
     MatrixCell Matrix[MATRIX_SIDE][MATRIX_SIDE];
 
-    QSqlDatabase saved_db = QSqlDatabase::addDatabase("QSQLITE");
+    const QString ConnectionName = QLatin1String("WeatherConnection");
+    QSqlDatabase saved_db = QSqlDatabase::addDatabase("QSQLITE", ConnectionName);
     QRandomGenerator rand;
 
 };

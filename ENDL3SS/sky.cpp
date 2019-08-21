@@ -114,16 +114,16 @@ Sky::Sky(QFileInfo saved_file, QObject *parent) : QObject(parent) {
     saved_db.setDatabaseName(saved_file.absoluteFilePath());
 
     if (!saved_db.open()) {
-        emit ConsoleOutput(saved_db.lastError().text());
+        qCritical() << "Sky: " << saved_db.lastError().text();
         throw QException();
     }
 
-    QSqlQuery query;
+    QSqlQuery query(saved_db);
 
     // Timers
 
     if (!query.exec("SELECT * FROM endl3ss_sky_timers")) {
-        qCritical() << saved_db.lastError().text();
+        qCritical() << "Sky: " << saved_db.lastError().text();
         throw QException();
     }
 
@@ -134,7 +134,7 @@ Sky::Sky(QFileInfo saved_file, QObject *parent) : QObject(parent) {
     // Create Celestial
 
     if (!query.exec("SELECT * FROM endl3ss_sky_celestial")) {
-        qCritical() << saved_db.lastError().text();
+        qCritical() << "Sky: " << saved_db.lastError().text();
         throw QException();
     }
 
@@ -158,13 +158,12 @@ Sky::Sky(QFileInfo saved_file, QObject *parent) : QObject(parent) {
                   qreal(query.value(9).toDouble()));
 
         CelestialPack.append(new_celestial);
-        qInfo() << "Sky: " + new_celestial->getID() + " is created";
     }
 
     // Create stars
 
     if (!query.exec("SELECT * FROM endl3ss_sky_stars")) {
-        qCritical() << saved_db.lastError().text();
+        qCritical() << "Sky: " << saved_db.lastError().text();
         throw QException();
     }
 
@@ -182,16 +181,10 @@ Sky::Sky(QFileInfo saved_file, QObject *parent) : QObject(parent) {
     }
     Stars_on = query.value(4).toInt() == 1 ? true : false;
 
-    qInfo() <<"Sky: " + QString::number(StarNum) +
-                   " stars are created [seed " + QString::number(query.value(1).toInt()) +
-                   "]. T1 limit = " + QString::number(query.value(2).toDouble()) +
-                   ", T2 limit = " + QString::number(query.value(3).toDouble());
-    qInfo() << "Sky: Stars are " + QString(Stars_on ? "on" : "off");
-
     // Create Spectator
 
     if (!query.exec("SELECT * FROM endl3ss_sky_spectator")) {
-        qCritical() << saved_db.lastError().text();
+        qCritical() << "Sky: " << saved_db.lastError().text();
         throw QException();
     }
 
@@ -205,10 +198,6 @@ Sky::Sky(QFileInfo saved_file, QObject *parent) : QObject(parent) {
     longitude = qreal(query.value(1).toDouble());
     latitude = qreal(query.value(2).toDouble());
 
-    qInfo() << "Sky: You are " + ground->getID() +
-                   " dweller [" + QString::number(latitude) +
-                   ":" + QString::number(longitude) + "]";
-
     Play(true);
 
 }
@@ -216,6 +205,7 @@ Sky::Sky(QFileInfo saved_file, QObject *parent) : QObject(parent) {
 Sky::~Sky() {
     Play(false);
     delete CelestialPack[0];
+    saved_db.close();
 }
 
 Sky::System3D Sky::System() {
@@ -322,17 +312,18 @@ void Sky::timerEvent([[maybe_unused]] QTimerEvent *event) {
 
 void Sky::Save() {
 
-    QSqlQuery query;
+    QSqlQuery query(saved_db);
     for (auto item: CelestialPack) {
         QString q = "UPDATE endl3ss_sky_celestial SET date = " + QString::number(item->getDate()) + ", "
                     "time = " + QString::number(item->getTime()) + " WHERE id = '" + item->getID() + "'; ";
-        if (!query.exec(q)) qDebug() << query.lastError().text();
+        if (!query.exec(q)) qCritical() << "Sky: " << query.lastError().text() << "(" << q << ")";
     }
     QString q = "UPDATE endl3ss_sky_spectator SET ground = '" + ground->getID() + "', "
                 "longitude = " + QString::number(longitude) + ", latitude = " + QString::number(latitude) + ";";
-    if (!query.exec(q)) qDebug() << query.lastError().text();
+    if (!query.exec(q)) qCritical() << "Sky: " << query.lastError().text() << "(" << q << ")";
     q = "UPDATE endl3ss_sky_stars SET stars_on = " + QString::number(Stars_on ? 1 : 0 ) + ";";
-    if (!query.exec(q)) qDebug() << query.lastError().text();
+    if (!query.exec(q)) qCritical() << "Sky: " << query.lastError().text() << "(" << q << ")";
+
 }
 
 void Sky::Console(QString var, QString value) {

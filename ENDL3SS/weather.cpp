@@ -1,9 +1,8 @@
 #include "weather.h"
 
-Cyclone::Cyclone(quint64 new_lifetime, QVector3D new_place, bool new_isCyclone) : lifetime(new_lifetime), place(new_place), isCyclone(new_isCyclone) { }
+Cyclone::Cyclone(quint64 new_lifetime, quint64 new_time_passed, QVector3D new_place, QVector3D new_speed, bool new_isCyclone) : lifetime(new_lifetime), time_passed(new_time_passed), place(new_place), speed(new_speed), isCyclone(new_isCyclone) { }
 
 void Cyclone::Loop(QVector3D force_summ) {
-
     speed += force_summ;
     speed.normalize();
     speed /= SPEED_LOWERING;
@@ -31,18 +30,71 @@ QVector3D Cyclone::getPlace() { return place; }
 
 bool Cyclone::exists() { return (time_passed < lifetime); }
 
-Weather::Weather(QFileInfo saved_file, int TimerInterval, int SaverInterval, QObject *parent) : QObject(parent), Timer_interval(TimerInterval), Saver_interval(SaverInterval) {
+Weather::Weather(QFileInfo saved_file, QObject *parent) : QObject(parent) {
 
     // Open DB
 
     saved_db.setDatabaseName(saved_file.absoluteFilePath());
 
     if (!saved_db.open()) {
-        emit ConsoleOutput(saved_db.lastError().text());
+        qCritical() << "Weather: " << saved_db.lastError().text();
         throw QException();
     }
 
-    QSqlQuery query;
+    QSqlQuery query(saved_db);
+
+    // Timers
+
+    if (!query.exec("SELECT * FROM endl3ss_weather_timers")) {
+        qCritical() << "Weather: " << saved_db.lastError().text();
+        throw QException();
+    }
+
+    query.next();
+    Timer_interval = query.value(0).toInt();
+    CycloneTimer_interval = query.value(1).toInt();
+    Saver_interval = query.value(2).toInt();
+
+    // Create Cyclone
+
+    if (!query.exec("SELECT * FROM endl3ss_weather_cyclone")) {
+        qCritical() <<  "Weather: " << saved_db.lastError().text();
+        throw QException();
+    }
+
+    while (query.next()) {
+
+        Cyclone * new_cyclone = new Cyclone(quint64(query.value(0).toInt()),
+                                            quint64(query.value(1).toInt()),
+                                            QVector3D(query.value(2).toFloat(), query.value(3).toFloat(), query.value(4).toFloat()),
+                                            QVector3D(query.value(5).toFloat(), query.value(6).toFloat(), query.value(7).toFloat()),
+                                            query.value(1).toBool());
+
+        CyclonePack.append(new_cyclone);
+    }
+
+    // Season
+
+    if (!query.exec("SELECT * FROM endl3ss_weather_other")) {
+        qCritical() << "Weather: " << saved_db.lastError().text();
+        throw QException();
+    }
+
+    query.next();
+    season = qreal(query.value(0).toDouble());
+
+    // Create Spectator
+
+    if (!query.exec("SELECT * FROM endl3ss_weather_spectator")) {
+        qCritical() << "Weather: " << saved_db.lastError().text();
+        throw QException();
+    }
+
+    query.next();
+
+    ground = query.value(0).toString();
+    longitude = qreal(query.value(1).toDouble());
+    latitude = qreal(query.value(2).toDouble());
 
     Play(true);
 
@@ -50,6 +102,9 @@ Weather::Weather(QFileInfo saved_file, int TimerInterval, int SaverInterval, QOb
 
 Weather::~Weather() {
     Play(false);
+    for (auto &item : CyclonePack)
+        delete item;
+    saved_db.close();
 }
 
 void Weather::Play(bool play) {
@@ -57,7 +112,7 @@ void Weather::Play(bool play) {
     if (play) {
         Timer_ID = startTimer(Timer_interval);
         Saver_ID = startTimer(Saver_interval);
-        CycloneTimer_ID = startTimer(CycloneTimer_Interval);
+        CycloneTimer_ID = startTimer(CycloneTimer_interval);
     } else {
         killTimer(Timer_ID);
         killTimer(Saver_ID);
@@ -78,7 +133,37 @@ void Weather::timerEvent([[maybe_unused]] QTimerEvent *event) {
 
 void Weather::Save() {
 
-    QSqlQuery query;
+    QSqlQuery query(saved_db);
+
+    QString q = "DELETE FROM endl3ss_weather_cyclone";
+    if (!query.exec(q)) qDebug() << query.lastError().text() << "(" << q << ")";
+
+    if (!CyclonePack.empty()) {
+    q = "INSERT INTO endl3ss_weather_cyclone VALUES ";
+    for (auto &item: CyclonePack) {
+        q += "( " + QString::number(item->getLifetime()) +
+                ", " + QString::number(item->getTimePassed()) +
+                ", " + QString::number(double(item->getPlace().x())) +
+                ", " + QString::number(double(item->getPlace().y())) +
+                ", " + QString::number(double(item->getPlace().z())) +
+                ", " + QString::number(double(item->getSpeed().x())) +
+                ", " + QString::number(double(item->getSpeed().y())) +
+                ", " + QString::number(double(item->getSpeed().z())) +
+                ", " + (item->getIsCyclone() ? "TRUE" : "FALSE") + "), ";
+
+    }
+
+    q.chop(2);
+    q += ";";
+
+    if (!query.exec(q)) qCritical() << "Weather: " << query.lastError().text() << "(" << q << ")";
+}
+    q = "UPDATE endl3ss_weather_spectator SET ground = '" + ground + "', "
+                "longitude = " + QString::number(longitude) + ", latitude = " + QString::number(latitude) + ";";
+    if (!query.exec(q)) qCritical() << "Weather: " << query.lastError().text() << "(" << q << ")";
+
+    q = "UPDATE endl3ss_weather_other SET season = " + QString::number(season) + ";";
+    if (!query.exec(q)) qCritical() << "Weather: " << query.lastError().text() << "(" << q << ")";
 
 }
 
@@ -121,7 +206,7 @@ bool Weather::newCyclone(Cyclone *cyclone) {
 
     if (((c_f < f_cyclone) && positive) || ((c_f < f_anticyclone) && (!positive))) {
 
-        *cyclone = Cyclone(new_lifetime, new_vect, !positive);
+        *cyclone = Cyclone(new_lifetime, 0, new_vect, QVector3D(0.0f, 0.0f, 0.0f), !positive);
         return true;
     }
 
@@ -130,7 +215,7 @@ bool Weather::newCyclone(Cyclone *cyclone) {
 
 void Weather::LoopCyclone() {
 
-    Cyclone *cyclone = new Cyclone(0, QVector3D(), true);
+    Cyclone *cyclone = new Cyclone(0, 0, QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 0.0f, 0.0f), true);
     bool did = newCyclone(cyclone);
     if (did) CyclonePack.append(cyclone);
 
@@ -139,7 +224,11 @@ void Weather::LoopCyclone() {
         QVector3D force_summ = QVector3D(0.0f, 0.0f, 0.0f);
 
         for (auto &item2 : CyclonePack)
-            force_summ += (item->getPlace() - item2->getPlace()) * float(qAbs(MASS_LOWERING * item2->getPower() / item->getPower()));
+            if (item != item2) {
+                QVector3D plus = item->getPlace() - item2->getPlace();
+                plus *= float(qAbs(MASS_LOWERING * item2->getLifetime() / item->getLifetime()));
+                force_summ += plus;
+            }
 
         item->Loop(force_summ);
     }
@@ -152,6 +241,7 @@ void Weather::LoopCyclone() {
         if (!t->exists()) {
             delete t;
             i.remove();
+        }
     }
 
     qDebug() << CyclonePack.size();

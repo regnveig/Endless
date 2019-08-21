@@ -104,7 +104,8 @@ private:
     int Timer_ID, Saver_ID;
     int Timer_interval, Saver_interval;
 
-    QSqlDatabase saved_db = QSqlDatabase::addDatabase("QSQLITE");
+    const QString ConnectionName = QLatin1String("SkyConnection");
+    QSqlDatabase saved_db = QSqlDatabase::addDatabase("QSQLITE", ConnectionName);
 
 };
 
