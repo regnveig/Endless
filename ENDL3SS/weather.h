@@ -26,8 +26,13 @@ constexpr qreal POWER_LOWERING = 10000;
 const float WIND_LOWERING = 1.0f;
 constexpr qreal SURFACE_COE = 0.01;
 const float CELL_SIZE = 0.2f;
+constexpr qreal CLOUD_START = 0.25;
+const quint16 CLOUD_CYCLES = 100;
+constexpr qreal CLOUDS_NUM_COE = 10;
 
-struct MatrixCell { qreal power; QVector3D wind, place; };
+struct MatrixCell { qreal power; QVector3D wind, place; quint16 clouds = 0; };
+
+struct Cloud { qreal x, y; quint8 z; quint16 cycles = CLOUD_CYCLES; };
 
 class Cyclone {
 public:
@@ -86,6 +91,7 @@ private:
     void LoopMatrix();
     void PlaceMatrix();
     QList<Cyclone *> CyclonePack;
+    QList<Cloud *> CloudPack;
     QString ground;
     qreal season;
     qreal longitude, latitude;
@@ -98,6 +104,7 @@ private:
     const QString ConnectionName = QLatin1String("WeatherConnection");
     QSqlDatabase saved_db = QSqlDatabase::addDatabase("QSQLITE", ConnectionName);
     QRandomGenerator rand;
+    QRandomGenerator clouder;
 
 };
 

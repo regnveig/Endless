@@ -134,7 +134,7 @@ void Weather::Save() {
     QSqlQuery query(saved_db);
 
     QString q = "DELETE FROM endl3ss_weather_cyclone";
-    if (!query.exec(q)) qDebug() << query.lastError().text() << "(" << q << ")";
+    if (!query.exec(q)) qCritical() << query.lastError().text() << "(" << q << ")";
 
     if (!CyclonePack.empty()) {
     q = "INSERT INTO endl3ss_weather_cyclone VALUES ";
@@ -288,6 +288,8 @@ void Weather::PlaceMatrix() {
 
 void Weather::LoopMatrix() {
 
+    qreal side = 1 / MATRIX_SIDE;
+
     for (auto i = 0; i < MATRIX_SIDE; i++) for (auto k = 0; k < MATRIX_SIDE; k++) {
         Matrix[i][k].power = 0;
         Matrix[i][k].wind = QVector3D();
@@ -296,7 +298,46 @@ void Weather::LoopMatrix() {
             Matrix[i][k].power += mc.power;
             Matrix[i][k].wind += mc.wind;
         }
+
+        qreal by_power = (- (Matrix[i][k].power + CLOUD_START) / (1 + CLOUD_START));
+        if (by_power < 0) by_power = 0;
+        if (by_power > 1) by_power = 1;
+        qreal cloud_random = Matrix[i][k].clouds / (by_power * CLOUDS_NUM_COE);
+        if (cloud_random > 1) cloud_random = 1;
+
+        if ((qreal(clouder.generate()) / QRandomGenerator::max()) < cloud_random) {
+            Cloud * new_cloud = new Cloud({(k * side) + (qreal(clouder.generate()) / QRandomGenerator::max() * side),
+                             (i * side) + (qreal(clouder.generate()) / QRandomGenerator::max() * side),
+                             0});
+            CloudPack.append(new_cloud);
+        }
+
+        Matrix[i][k].clouds = 0;
     }
 
+    for (auto &item: CloudPack) {
+        if ((item->y >= 0) && (item->y <= 1) && (item->x >= 0) && (item->x <= 1)) {
+            int i = qFloor(item->y * MATRIX_SIDE);
+            int k = qFloor(item->x * MATRIX_SIDE);
+            Matrix[i][k].clouds++;
+        }
 
+        (item->cycles)--;
+
+        // WIND
+
+    }
+
+    // Сборщик мусора
+
+    QMutableListIterator<Cloud *> i(CloudPack);
+    while (i.hasNext()) {
+        Cloud * t = i.next();
+        if ((t->cycles == 0) || (t->x < 0) || (t->x > 1) || (t->y < 0) || (t->y > 1)) {
+            delete t;
+            i.remove();
+        }
+    }
+
+    // emit
 }
