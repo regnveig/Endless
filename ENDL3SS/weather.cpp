@@ -5,7 +5,7 @@ Cyclone::Cyclone(quint64 new_lifetime, quint64 new_time_passed, QVector3D new_pl
 void Cyclone::Loop(QVector3D force_summ) {
     speed += force_summ;
     speed.normalize();
-    speed /= SPEED_LOWERING;
+    speed *= SPEED_LOWERING;
     place += speed;
     place.normalize();
     time_passed++;
@@ -21,7 +21,7 @@ MatrixCell Cyclone::getMatrixCellByPoint(QVector3D spectator) {
     point_wind.normalize();
     point_wind *= float(point_power) * WIND_LOWERING;
 
-    return {point_power, point_wind};
+    return {point_power, point_wind, QVector3D()};
 }
 
 qreal Cyclone::getPower() { return qSin(time_passed * M_PI / lifetime) * (isCyclone ? -1 : 1); }
@@ -97,6 +97,7 @@ Weather::Weather(QFileInfo saved_file, QObject *parent) : QObject(parent) {
     latitude = qreal(query.value(2).toDouble());
 
     Play(true);
+    PlaceMatrix();
 
 }
 
@@ -122,10 +123,7 @@ void Weather::Play(bool play) {
 
 void Weather::timerEvent([[maybe_unused]] QTimerEvent *event) {
 
-    if (event->timerId() == Timer_ID) {
-
-    }
-
+    if (event->timerId() == Timer_ID) LoopMatrix();
     if (event->timerId() == CycloneTimer_ID) LoopCyclone();
     if (event->timerId() == Saver_ID) Save();
 
@@ -190,7 +188,7 @@ bool Weather::newCyclone(Cyclone *cyclone) {
     qreal   c_surface     = 1.0;
 
     for (auto &item : CyclonePack)
-        c_surface -= 0.25 * item->getPower();
+        c_surface -= SURFACE_COE * qAbs(item->getPower());
     if (c_surface < 0) c_surface = 0;
 
     qreal f_cyclone = RANDOM_COE * (qCos(c_latitude) * c_surface * qAbs(qSin(season) * qSin(c_latitude)));
@@ -226,10 +224,10 @@ void Weather::LoopCyclone() {
         for (auto &item2 : CyclonePack)
             if (item != item2) {
                 QVector3D plus = item->getPlace() - item2->getPlace();
-                float r2 = plus.lengthSquared();
-                if (r2 != 0.0f) {
+                qreal r2 = qreal(plus.lengthSquared());
+                if (r2 != 0.0) {
                 plus.normalize();
-                plus *= float(qAbs(MASS_LOWERING * item2->getLifetime() / item->getLifetime()) / r2);
+                plus *= float(qAbs(item2->getLifetime() / item->getLifetime()) / r2);
                 force_summ += plus; }
             }
 
@@ -253,9 +251,52 @@ void Weather::LoopCyclone() {
        for (auto &item : CyclonePack)
            list.append({item->getPlace(), item->getPower()});
 
+       for (auto i = 0; i < MATRIX_SIDE; i++) for (auto k = 0; k < MATRIX_SIDE; k++) {
+           list.append({Matrix[i][k].place, Matrix[i][k].power});
+       }
+
        qDebug() << CyclonePack.size();
 
        emit WeatherData(list);
     // ------------------------------
+
+}
+
+void Weather::PlaceMatrix() {
+
+    float step = CELL_SIZE / (MATRIX_SIDE - 1);
+
+    QVector3D b (float(qCos(latitude) * qCos(longitude)),
+                float(qCos(latitude) * qSin(longitude)),
+                float(qSin(latitude)));
+
+    QVector3D x (float(qCos(latitude - M_PI_2) * qCos(longitude)) * step,
+                float(qCos(latitude - M_PI_2) * qSin(longitude)) * step,
+                float(qSin(latitude - M_PI_2)) * step);
+
+    QVector3D y (float(qCos(longitude + M_PI_2)) * step,
+                float(qSin(longitude + M_PI_2)) * step,
+                0.0f);
+
+    int Middle = qFloor(MATRIX_SIDE / 2);
+
+    for (auto i = 0; i < MATRIX_SIDE; i++) for (auto k = 0; k < MATRIX_SIDE; k++) {
+        Matrix[i][k].place = b + (x * (k - Middle)) + (y * (i - Middle));
+        Matrix[i][k].place.normalize();
+    }
+}
+
+void Weather::LoopMatrix() {
+
+    for (auto i = 0; i < MATRIX_SIDE; i++) for (auto k = 0; k < MATRIX_SIDE; k++) {
+        Matrix[i][k].power = 0;
+        Matrix[i][k].wind = QVector3D();
+        for (auto &item : CyclonePack) {
+            MatrixCell mc = item->getMatrixCellByPoint(Matrix[i][k].place);
+            Matrix[i][k].power += mc.power;
+            Matrix[i][k].wind += mc.wind;
+        }
+    }
+
 
 }

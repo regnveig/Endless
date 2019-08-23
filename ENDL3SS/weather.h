@@ -20,13 +20,14 @@
 const quint32 MIN_LIFETIME = 128;
 const quint32 MAX_LIFETIME = 1024;
 constexpr qreal RANDOM_COE = 0.1;
-constexpr qreal SPEED_LOWERING = 100;
-const quint8 MATRIX_SIDE = 3;
-constexpr qreal POWER_LOWERING = 1;
-const float WIND_LOWERING = 1;
-constexpr qreal MASS_LOWERING = 1;
+const float SPEED_LOWERING = 0.01f;
+const quint8 MATRIX_SIDE = 5;
+constexpr qreal POWER_LOWERING = 10000;
+const float WIND_LOWERING = 1.0f;
+constexpr qreal SURFACE_COE = 0.01;
+const float CELL_SIZE = 0.2f;
 
-struct MatrixCell { qreal power; QVector3D wind; };
+struct MatrixCell { qreal power; QVector3D wind, place; };
 
 class Cyclone {
 public:
@@ -82,6 +83,8 @@ private:
 
     bool newCyclone(Cyclone *cyclone);
     void LoopCyclone();
+    void LoopMatrix();
+    void PlaceMatrix();
     QList<Cyclone *> CyclonePack;
     QString ground;
     qreal season;

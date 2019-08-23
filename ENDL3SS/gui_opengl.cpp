@@ -48,7 +48,7 @@ void GUI_OpenGL::paintGL() {
 
                QVector3D vect = item.vect;
                GLfloat Radius = GLfloat(item.power);
-               if (Radius >= 0)
+               if (Radius <= 0)
                    Sky::DoStar(vect, Radius);
                else Sky::DoSun(vect, qAbs(Radius));
         }
