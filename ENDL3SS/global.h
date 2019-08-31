@@ -28,4 +28,6 @@ struct StarInfo {
     quint8      type;
 };
 
+struct CloudInfo { qreal x, y; quint8 z; };
+
 #endif // GLOBAL_H

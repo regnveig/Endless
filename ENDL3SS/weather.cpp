@@ -290,6 +290,8 @@ void Weather::LoopMatrix() {
 
     qreal side = 1 / MATRIX_SIDE;
 
+    QList<CloudInfo> clouds;
+
     for (auto i = 0; i < MATRIX_SIDE; i++) for (auto k = 0; k < MATRIX_SIDE; k++) {
         Matrix[i][k].power = 0;
         Matrix[i][k].wind = QVector3D();
@@ -326,6 +328,8 @@ void Weather::LoopMatrix() {
 
         // WIND
 
+        clouds.append({item->x, item->y, item->z});
+
     }
 
     // Сборщик мусора
@@ -339,5 +343,5 @@ void Weather::LoopMatrix() {
         }
     }
 
-    // emit
+    emit WeatherData(clouds);
 }

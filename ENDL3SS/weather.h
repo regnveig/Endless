@@ -67,7 +67,7 @@ public:
 
 signals:
 
-    void WeatherData();
+    void WeatherData(QList<CloudInfo> clouds);
     void ConsoleOutput(QString message);
     // -------- Debug ----------
     void                WeatherData                 (QList<weather_data> data);
