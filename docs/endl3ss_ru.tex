@@ -1,0 +1,139 @@
+\documentclass[a4paper,12pt,fleqn]{article}
+\usepackage{polyglossia} 
+\setdefaultlanguage[babelshorthands=true]{russian}
+\setotherlanguage{english}
+\defaultfontfeatures{Ligatures=TeX,Mapping=tex-text}
+
+\setmainfont{Linux Libertine}
+
+\usepackage{xltxtra}
+\usepackage{microtype}
+
+\usepackage{xcolor}
+\definecolor{darkblue}{HTML}{003153}
+\usepackage{graphicx}
+\usepackage {textcomp}
+\usepackage[twoside,left=2.5cm,right=3cm,top=3cm,bottom=4cm,bindingoffset=0cm]{geometry}
+
+\newcommand{\spacing}{\textcolor{red}{\textbf{(разрыв)}}}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=darkblue, citecolor=darkblue, filecolor=darkblue, urlcolor=darkblue}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[LO]{{\small ENDL3SS}}
+\fancyhead[RE]{{\small ДОКУМЕНТАЦИЯ}} 
+\fancyfoot{}
+\fancypagestyle{plain}
+{
+\fancyhead{}
+\renewcommand{\headrulewidth}{0mm}
+\fancyfoot{}
+}
+
+\begin{document}
+
+\begin{titlepage}
+{\centering
+{~\par}
+\vspace{0.25\textheight}
+{\Huge 
+\begin{minipage}{0.4\textwidth}
+\[\notin\mathbb{N},\frac{\partial l}{\partial x}\sum\iint\]
+\end{minipage}
+\par}
+\vspace{1.0cm}
+{\Large Документация \par}
+\vfill
+{\Large Создано в \XeLaTeX }\par}
+\end{titlepage}
+
+\tableofcontents
+
+\section{Sky}
+
+\subsection{SphericRandom}
+
+В ходе разработки модуля \verb|Sky| пришлось решать задачу равномерного распределения звёзд по небу.
+В высшей математике я не силён, поэтому сразу стал искать решение в интернете.
+Наткнулся на \href{https://www.fundamental-research.ru/ru/article/view?id=31243}{статью} под авторством Копытова и Митюшова.
+
+Польза этой статьи в том, что там рассматривалось общее решение равномерного распределения точек по поверхностям.
+В частности, среди примеров были тор и бутылка Клейна.
+
+Итак, для поверхности, заданной параметрическими уравнениями \[x = x(u, v), y = y(u, v), z = z(u, v)\] на области \[D = \left \{ u_1 \leqslant u \leqslant u_2; v_1 \leqslant v \leqslant v_2 \right \}\] функция равномерного распределения выглядит так:
+
+\[f(u, v) = \frac{\sqrt{EG - F^2}}{\iint\limits_D \sqrt{EG - F^2}\,du\,dv}\]
+
+$E$, $G$ и $F$ "--- коэффициенты первой квадратичной формы поверхности.
+
+Для сферы, задаваемой параметрами
+
+\[r'_u(- a \sin u \cos v; - a \sin u \sin v; - a \cos u),\]
+\[r'_v(-a \cos u \sin v; a \cos u \cos v; 0)\]
+
+на области
+
+\[D = \left \{ 0 \leqslant u \leqslant \pi; 0 \leqslant v \leqslant 2\pi \right \}\]
+
+коэффициенты п.к.ф. равны
+
+\[E = a^2, F = 0, G = a^2 \cos^2 u\]
+
+Для генерации случайных чисел на основе известной функции распределения использовался метод Неймана:
+
+\begin{enumerate}
+\item Функция плотности распределения вписывается в прямоугольник;
+\item Генерируются два независимых числа эталонным генератором случайной величины с равномерным распределением на интервале $(0, 1)$ и масштабируются по сторонам прямоугольника;
+\item Если полученная точка попадает в область под графиком плотности распределения, то точка принимается, иначе отбрасывается;
+\item Повторяются действия 2--3 до тех пор, пока не будет сгенерировано необходимое число точек.                                                                                            \end{enumerate}
+
+После ряда упрощений я пришёл к алгоритму, описанному в функции \verb|SphericRandom|.
+Он возвращает единичный вектор на основе генератора случайных чисел.
+Эмпирически алгоритм соответствует поставленной задаче, тестировался при $N = 10000$.
+
+\section{Weather}
+
+Эта система создаёт изменения погоды, напоминающие реальные.
+
+В качестве входных данных используются следующие:
+
+\begin{itemize}
+\item Широта, на которой находится наблюдатель ($\theta$);
+\item Время года, сиречь отношение наклона оси к месту планеты на орбите ($\alpha$).                                                    \end{itemize}
+
+Воздушные потоки определяются циклонами и антициклонами.
+Эти два типа объектов генерируются независимо друг от друга.
+
+Радиус объекта, он же "--- время жизни.
+Чем дальше объект от экватора, тем больше его радиус:
+
+\[r = | \sin \theta |\]
+
+Функции вероятности.
+Для циклона и антициклона взяты следующие функции вероятности:
+
+\[f_c = \cos \theta \left( 1 - \frac{1}{4} \sum r_i^2 \right ) | \sin \alpha | \cdot | \sin \theta |\]
+
+\[f_a = \cos \theta \left( 1 - \frac{1}{4} \sum r_i^2 \right ) | \cos \alpha | \cdot | \cos 2 \theta |\]
+
+Компоненты функций:
+
+\begin{enumerate}
+\item Компонент равномерного распределения на сфере;
+\item Компонент, уменьшающий вероятность генерации в зависимости от заполненности поверхности сферы;
+\item Компонент, увеличивающий вероятность генерации циклона в межсезонье, а антициклона "--- зимой или летом;
+\item Компонент, увеличивающий вероятность генерации циклона ближе к полюсу, а антициклона "--- на полюсах и экваторе.                                                                                                                      \end{enumerate}
+
+Далее генерация объекта происходит по уже ипользовавшемуся методу Неймана.
+
+\section{Console}
+
+\end{document}
+ 
