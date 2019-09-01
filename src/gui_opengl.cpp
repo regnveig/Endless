@@ -5,7 +5,7 @@
 GUI_OpenGL::GUI_OpenGL(QWidget *parent) : QOpenGLWidget(parent) {
 
     xAxisRotation = yAxisRotation = 0;
-    resize(800,800);
+    resize(screenX, screenY);
 }
 
 void GUI_OpenGL::initializeGL() {
@@ -32,17 +32,18 @@ void GUI_OpenGL::resizeGL(int nWidth, int nHeight) {
 
 void GUI_OpenGL::paintGL() {
 
+    qreal screenT = qreal(screenX) / qreal(screenY);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glOrtho(-1.5, 1.5, -1.5, 1.5, -20.0, 20.0);
-    glRotatef(yAxisRotation, 0.0, 1.0, 0.0);
-    glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
+    glOrtho(-screenT * 1.5, screenT * 1.5, -1.5, 1.5, 0.0, 50.0);
+    glRotatef(yAxisRotation, 0.0, 0.5, 0.0);
+    glRotatef(xAxisRotation, 0.5, 0.0, 0.0);
 
     DrawSky();
-    DrawWeather();
+
 
     // ---------- Debug -------------
     for (auto &item : cyclone_data) {
@@ -54,6 +55,9 @@ void GUI_OpenGL::paintGL() {
                else Sky::DoSun(vect, qAbs(Radius));
         }
     // ------------------------------
+
+
+    DrawWeather();
 }
 
 // Debug
@@ -74,6 +78,8 @@ void GUI_OpenGL::mouseMoveEvent(QMouseEvent *event) {
 
     xAxisRotation += (180 * (GLfloat(event->y()) - GLfloat(pressPosition.y()))) / (currentHeight);
     yAxisRotation += (180 * (GLfloat(event->x()) - GLfloat(pressPosition.x()))) / (currentWidth);
+    if (xAxisRotation < -90) xAxisRotation = -90;
+    if (xAxisRotation > 90) xAxisRotation = 90;
     pressPosition = event->pos();
     this->update();
 }
@@ -145,7 +151,7 @@ void GUI_OpenGL::DrawSky() {
 
 void GUI_OpenGL::Weather::DoWeatherBox() {
 
-    GLfloat             wb[]        = {1.0f, 1.0f, 1.0f, 0.0f};
+    GLfloat             wb[]        = {1.0f, 1.0f, 1.0f, 0.1f};
 
     glBegin     (GL_POLYGON);
     glColor4fv  (wb);
@@ -156,18 +162,71 @@ void GUI_OpenGL::Weather::DoWeatherBox() {
     glEnd       ();
 }
 
+GLfloat GUI_OpenGL::Weather::CloudHeight(GLfloat cloudX, GLfloat cloudY) {
+
+    return (qAbs(qreal(cloudX - WEATHER_SIZE)) > qAbs(qreal(cloudY - WEATHER_SIZE))) ?
+           GLfloat(qCos(qreal(GLfloat(qAbs(qreal(cloudX - WEATHER_SIZE))) / WEATHER_SIZE))) * CLOUD_SIZE * 3.0f :
+           GLfloat(qCos(qreal((GLfloat(qAbs(qreal(cloudY - WEATHER_SIZE))) / WEATHER_SIZE))))  * CLOUD_SIZE * 3.0f;
+}
+
 void GUI_OpenGL::Weather::DoCloud(CloudInfo cloud) {
 
     GLfloat             wb[]        = {1.0f, 1.0f, 1.0f, 0.5f};
+    GLfloat             bb[]        = {0.8f, 0.8f, 1.0f, 0.2f};
+    GLfloat             ba[]        = {1.0f, 1.0f, 1.0f, 0.0f};
+
+    GLfloat             h           = 0.1f;
     GLfloat             x           = GLfloat(cloud.x) * 2 * WEATHER_SIZE - WEATHER_SIZE;
+    qreal               length      = (qAbs(cloud.x - 0.5) > qAbs(cloud.y - 0.5)) ? qSqrt(1 + qPow((cloud.y - 0.5) / (cloud.x - 0.5), 2)) : qSqrt(1 + qPow((cloud.x - 0.5) / (cloud.y - 0.5), 2));
+    GLfloat             y           = GLfloat(1 - 2 * (qSqrt(qPow(cloud.x - 0.5, 2) + qPow(cloud.y - 0.5, 2)) / length)) * WEATHER_HEIGHT;
     GLfloat             z           = GLfloat(cloud.y) * 2 * WEATHER_SIZE - WEATHER_SIZE;
 
-    glBegin     (GL_POLYGON);
+//    glBegin     (GL_POLYGON);
+//    glColor4fv  (wb);
+//    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glVertex3f  (x + CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glEnd       ();
+
+//    glBegin     (GL_POLYGON);
+//    glColor4fv  (bb);
+//    glVertex3f  (x + CLOUD_SIZE, y + h, z + CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y + h, z + CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y + h, z - CLOUD_SIZE);
+//    glVertex3f  (x + CLOUD_SIZE, y + h, z - CLOUD_SIZE);
+//    glEnd       ();
+
+    glBegin     (GL_TRIANGLES);
+    glColor4fv  (ba);
+    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
+    glVertex3f  (x - CLOUD_SIZE, y, z + CLOUD_SIZE);
     glColor4fv  (wb);
-    glVertex3f  (x + CLOUD_SIZE, WEATHER_HEIGHT, z + CLOUD_SIZE);
-    glVertex3f  (x - CLOUD_SIZE, WEATHER_HEIGHT, z + CLOUD_SIZE);
-    glVertex3f  (x - CLOUD_SIZE, WEATHER_HEIGHT, z - CLOUD_SIZE);
-    glVertex3f  (x + CLOUD_SIZE, WEATHER_HEIGHT, z - CLOUD_SIZE);
+    glVertex3f  (x, y - h, z);
+    glEnd       ();
+
+    glBegin     (GL_TRIANGLES);
+    glColor4fv  (ba);
+    glVertex3f  (x - CLOUD_SIZE, y, z + CLOUD_SIZE);
+    glVertex3f  (x - CLOUD_SIZE, y, z - CLOUD_SIZE);
+    glColor4fv  (wb);
+    glVertex3f  (x, y - h, z);
+    glEnd       ();
+
+    glBegin     (GL_TRIANGLES);
+    glColor4fv  (ba);
+    glVertex3f  (x - CLOUD_SIZE, y, z - CLOUD_SIZE);
+    glVertex3f  (x + CLOUD_SIZE, y, z - CLOUD_SIZE);
+    glColor4fv  (wb);
+    glVertex3f  (x, y - h, z);
+    glEnd       ();
+
+    glBegin     (GL_TRIANGLES);
+    glColor4fv  (ba);
+    glVertex3f  (x + CLOUD_SIZE, y, z - CLOUD_SIZE);
+    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
+    glColor4fv  (wb);
+    glVertex3f  (x, y - h, z);
     glEnd       ();
 }
 

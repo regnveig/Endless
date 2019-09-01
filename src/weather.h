@@ -22,13 +22,13 @@ const quint32 MAX_LIFETIME = 1024;
 constexpr qreal RANDOM_COE = 0.1;
 const float SPEED_LOWERING = 0.01f;
 const quint8 MATRIX_SIDE = 5;
-constexpr qreal POWER_LOWERING = 1000;
+constexpr qreal POWER_LOWERING = 2000;
 const float WIND_LOWERING = 1.0f;
 constexpr qreal SURFACE_COE = 0.01;
 const float CELL_SIZE = 0.2f;
 constexpr qreal CLOUD_START = 0.25;
-const quint16 CLOUD_CYCLES = 100;
-constexpr qreal CLOUDS_NUM_COE = 10;
+const quint16 CLOUD_CYCLES = 500;
+constexpr qreal CLOUDS_NUM_COE = 300;
 
 struct MatrixCell { qreal power; QVector3D wind, place; quint16 clouds = 0; };
 

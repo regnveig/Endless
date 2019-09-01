@@ -20,6 +20,9 @@
 
 #include "global.h"
 
+const quint16 screenX = 1366;
+const quint16 screenY = 768;
+
 class GUI_OpenGL : public QOpenGLWidget {
 
     Q_OBJECT
@@ -50,9 +53,10 @@ private:
 
         static void         DoWeatherBox            ();
         static void         DoCloud                 (CloudInfo cloud);
+        static GLfloat      CloudHeight             (GLfloat cloudX, GLfloat cloudY);
 
-        static constexpr GLfloat CLOUD_SIZE              = 0.5f;
-        static constexpr GLfloat WEATHER_SIZE            = 25.0f;
+        static constexpr GLfloat CLOUD_SIZE              = 0.6f;
+        static constexpr GLfloat WEATHER_SIZE            = 5.0f;
         static constexpr GLfloat WEATHER_HEIGHT          = 5.0f;
     };
 

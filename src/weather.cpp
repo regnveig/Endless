@@ -342,7 +342,5 @@ void Weather::LoopMatrix() {
         }
     }
 
-    qDebug() << "Clouds: " << clouds.size();
-
     emit WeatherData(clouds);
 }
