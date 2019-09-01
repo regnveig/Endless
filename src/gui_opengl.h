@@ -30,6 +30,7 @@ public:
 
 public slots:
 
+    void                WeatherData                 (QList<CloudInfo> clouds);
     void                CelestialData               (QList<CelestialInfo> data);
     void                StarsData                   (QList<StarInfo> data);
     // -------- Debug ----------
@@ -44,6 +45,16 @@ protected:
     void                 mouseMoveEvent              (QMouseEvent* event) override;
 
 private:
+
+    struct Weather {
+
+        static void         DoWeatherBox            ();
+        static void         DoCloud                 (CloudInfo cloud);
+
+        static constexpr GLfloat CLOUD_SIZE              = 0.5f;
+        static constexpr GLfloat WEATHER_SIZE            = 25.0f;
+        static constexpr GLfloat WEATHER_HEIGHT          = 5.0f;
+    };
 
     struct Sky {
 
@@ -61,9 +72,11 @@ private:
     };
 
     void                    DrawSky();
+    void                    DrawWeather();
 
     QList<CelestialInfo>    sky_data;
     QList<StarInfo>         stars_data;
+    QList<CloudInfo>        clouds_data;
 
     GLfloat                 currentWidth,
                             currentHeight;

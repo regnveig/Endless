@@ -255,8 +255,6 @@ void Weather::LoopCyclone() {
            list.append({Matrix[i][k].place, Matrix[i][k].power});
        }
 
-       qDebug() << CyclonePack.size();
-
        emit WeatherData(list);
     // ------------------------------
 
@@ -288,7 +286,7 @@ void Weather::PlaceMatrix() {
 
 void Weather::LoopMatrix() {
 
-    qreal side = 1 / MATRIX_SIDE;
+    qreal side = 1.0 / qreal(MATRIX_SIDE);
 
     QList<CloudInfo> clouds;
 
@@ -304,13 +302,14 @@ void Weather::LoopMatrix() {
         qreal by_power = (- (Matrix[i][k].power + CLOUD_START) / (1 + CLOUD_START));
         if (by_power < 0) by_power = 0;
         if (by_power > 1) by_power = 1;
-        qreal cloud_random = Matrix[i][k].clouds / (by_power * CLOUDS_NUM_COE);
-        if (cloud_random > 1) cloud_random = 1;
+        qreal cloud_random = 0;
+        if (by_power > 0) cloud_random = 1 - (Matrix[i][k].clouds / (by_power * CLOUDS_NUM_COE));
+        if (cloud_random < 0) cloud_random = 0;
 
         if ((qreal(clouder.generate()) / QRandomGenerator::max()) < cloud_random) {
-            Cloud * new_cloud = new Cloud({(k * side) + (qreal(clouder.generate()) / QRandomGenerator::max() * side),
-                             (i * side) + (qreal(clouder.generate()) / QRandomGenerator::max() * side),
-                             0});
+            qreal new_x = (k * side) + (qreal(clouder.generate()) / QRandomGenerator::max() * side);
+            qreal new_y = (i * side) + (qreal(clouder.generate()) / QRandomGenerator::max() * side);
+            Cloud * new_cloud = new Cloud({new_x, new_y, 0, CLOUD_CYCLES});
             CloudPack.append(new_cloud);
         }
 
@@ -342,6 +341,8 @@ void Weather::LoopMatrix() {
             i.remove();
         }
     }
+
+    qDebug() << "Clouds: " << clouds.size();
 
     emit WeatherData(clouds);
 }

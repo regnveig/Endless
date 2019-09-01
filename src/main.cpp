@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    QFileInfo saved_sky("./saved/sky.module");
-    QFileInfo saved_weather("./saved/weather.module");
+    QFileInfo saved_sky("./init/sky.module");
+    QFileInfo saved_weather("./init/weather.module");
 
     GUI_OpenGL w;
     Sky *sky = new Sky(saved_sky);
@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
     // debug
     a.connect(weather, SIGNAL(WeatherData(QList<weather_data>)), &w, SLOT(WeatherData(QList<weather_data>)));
     // -----
+    a.connect(weather, SIGNAL(WeatherData(QList<CloudInfo>)), &w, SLOT(WeatherData(QList<CloudInfo>)));
+
 
     return a.exec();
 }

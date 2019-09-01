@@ -42,6 +42,7 @@ void GUI_OpenGL::paintGL() {
     glRotatef(xAxisRotation, 1.0, 0.0, 0.0);
 
     DrawSky();
+    DrawWeather();
 
     // ---------- Debug -------------
     for (auto &item : cyclone_data) {
@@ -82,6 +83,10 @@ void GUI_OpenGL::CelestialData(QList<CelestialInfo> data) {
     sky_data = data;
     this->update();
 };
+
+void GUI_OpenGL::WeatherData(QList<CloudInfo> clouds) {
+    clouds_data = clouds;
+}
 
 void GUI_OpenGL::StarsData(QList<StarInfo> data) {
 
@@ -133,6 +138,45 @@ void GUI_OpenGL::DrawSky() {
             }
         }
     }
+
+}
+
+/* ------ WEATHER ------ */
+
+void GUI_OpenGL::Weather::DoWeatherBox() {
+
+    GLfloat             wb[]        = {1.0f, 1.0f, 1.0f, 0.0f};
+
+    glBegin     (GL_POLYGON);
+    glColor4fv  (wb);
+    glVertex3f  (WEATHER_SIZE, WEATHER_HEIGHT, WEATHER_SIZE);
+    glVertex3f  (- WEATHER_SIZE, WEATHER_HEIGHT, WEATHER_SIZE);
+    glVertex3f  (- WEATHER_SIZE, WEATHER_HEIGHT, - WEATHER_SIZE);
+    glVertex3f  (WEATHER_SIZE, WEATHER_HEIGHT, - WEATHER_SIZE);
+    glEnd       ();
+}
+
+void GUI_OpenGL::Weather::DoCloud(CloudInfo cloud) {
+
+    GLfloat             wb[]        = {1.0f, 1.0f, 1.0f, 0.5f};
+    GLfloat             x           = GLfloat(cloud.x) * 2 * WEATHER_SIZE - WEATHER_SIZE;
+    GLfloat             z           = GLfloat(cloud.y) * 2 * WEATHER_SIZE - WEATHER_SIZE;
+
+    glBegin     (GL_POLYGON);
+    glColor4fv  (wb);
+    glVertex3f  (x + CLOUD_SIZE, WEATHER_HEIGHT, z + CLOUD_SIZE);
+    glVertex3f  (x - CLOUD_SIZE, WEATHER_HEIGHT, z + CLOUD_SIZE);
+    glVertex3f  (x - CLOUD_SIZE, WEATHER_HEIGHT, z - CLOUD_SIZE);
+    glVertex3f  (x + CLOUD_SIZE, WEATHER_HEIGHT, z - CLOUD_SIZE);
+    glEnd       ();
+}
+
+void GUI_OpenGL::DrawWeather() {
+
+    Weather::DoWeatherBox();
+
+    for (auto &item : clouds_data)
+        Weather::DoCloud(item);
 }
 
 /* ------ SKY ------ */

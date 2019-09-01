@@ -5,8 +5,6 @@ TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
-# DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
-
 CONFIG += c++17
 SOURCES += \
         console.cpp \
@@ -19,6 +17,14 @@ SOURCES += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DESTDIR = $${_PRO_FILE_PWD_}/../bin
+
+copydata.commands = $(COPY_DIR) $${_PRO_FILE_PWD_}/../init $$DESTDIR
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
 
 HEADERS += \
     console.h \
