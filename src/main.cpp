@@ -4,8 +4,8 @@
 #include "console.h"
 #include "weather.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+	
     QApplication a(argc, argv);
 
     QFileInfo saved_sky("./init/sky.module");

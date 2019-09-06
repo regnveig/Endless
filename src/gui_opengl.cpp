@@ -35,10 +35,10 @@ void GUI_OpenGL::paintGL() {
     qreal screenT = qreal(screenX) / qreal(screenY);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-
-    glOrtho(-screenT * 1.5, screenT * 1.5, -1.5, 1.5, 0.0, 50.0);
+    //glOrtho(-screenT * 1.5, screenT * 1.5, -1.5, 1.5, 0.0, 50.0);
+    glFrustum(-screenT * 0.1, screenT * 0.1, -0.1, 0.1, 0.25, 50.0);
     glRotatef(yAxisRotation, 0.0, 0.5, 0.0);
     glRotatef(xAxisRotation, 0.5, 0.0, 0.0);
 
@@ -58,6 +58,7 @@ void GUI_OpenGL::paintGL() {
 
 
     DrawWeather();
+    glMatrixMode(GL_MODELVIEW);
 }
 
 // Debug
@@ -181,6 +182,8 @@ void GUI_OpenGL::Weather::DoCloud(CloudInfo cloud) {
     GLfloat             y           = GLfloat(1 - 2 * (qSqrt(qPow(cloud.x - 0.5, 2) + qPow(cloud.y - 0.5, 2)) / length)) * WEATHER_HEIGHT;
     GLfloat             z           = GLfloat(cloud.y) * 2 * WEATHER_SIZE - WEATHER_SIZE;
 
+//    sandwich cloud
+
 //    glBegin     (GL_POLYGON);
 //    glColor4fv  (wb);
 //    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
@@ -197,6 +200,8 @@ void GUI_OpenGL::Weather::DoCloud(CloudInfo cloud) {
 //    glVertex3f  (x + CLOUD_SIZE, y + h, z - CLOUD_SIZE);
 //    glEnd       ();
 
+// feather cloud
+
     glBegin     (GL_TRIANGLES);
     glColor4fv  (ba);
     glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
@@ -228,6 +233,73 @@ void GUI_OpenGL::Weather::DoCloud(CloudInfo cloud) {
     glColor4fv  (wb);
     glVertex3f  (x, y - h, z);
     glEnd       ();
+
+// diamond cloud
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glColor4fv  (wb);
+//    glVertex3f  (x, y - h, z);
+//    glEnd       ();
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x - CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glColor4fv  (wb);
+//    glVertex3f  (x, y - h, z);
+//    glEnd       ();
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x - CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glVertex3f  (x + CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glColor4fv  (wb);
+//    glVertex3f  (x, y - h, z);
+//    glEnd       ();
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x + CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glColor4fv  (wb);
+//    glVertex3f  (x, y - h, z);
+//    glEnd       ();
+
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x - CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glColor4fv  (bb);
+//    glVertex3f  (x, y + h, z);
+//    glEnd       ();
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x - CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glColor4fv  (bb);
+//    glVertex3f  (x, y + h, z);
+//    glEnd       ();
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x + CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glVertex3f  (x - CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glColor4fv  (bb);
+//    glVertex3f  (x, y + h, z);
+//    glEnd       ();
+
+//    glBegin     (GL_TRIANGLES);
+//    glColor4fv  (ba);
+//    glVertex3f  (x + CLOUD_SIZE, y, z + CLOUD_SIZE);
+//    glVertex3f  (x + CLOUD_SIZE, y, z - CLOUD_SIZE);
+//    glColor4fv  (bb);
+//    glVertex3f  (x, y + h, z);
+//    glEnd       ();
 }
 
 void GUI_OpenGL::DrawWeather() {
