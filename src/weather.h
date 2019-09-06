@@ -27,8 +27,8 @@ const float WIND_LOWERING = 1.0f;
 constexpr qreal SURFACE_COE = 0.01;
 const float CELL_SIZE = 0.2f;
 constexpr qreal CLOUD_START = 0.25;
-const quint16 CLOUD_CYCLES = 500;
-constexpr qreal CLOUDS_NUM_COE = 300;
+const quint16 CLOUD_CYCLES = 5000;
+constexpr qreal CLOUDS_NUM_COE = 2000;
 
 struct MatrixCell { qreal power; QVector3D wind, place; quint16 clouds = 0; };
 

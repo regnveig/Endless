@@ -53,11 +53,10 @@ private:
 
         static void         DoWeatherBox            ();
         static void         DoCloud                 (CloudInfo cloud);
-        static GLfloat      CloudHeight             (GLfloat cloudX, GLfloat cloudY);
 
-        static constexpr GLfloat CLOUD_SIZE              = 0.6f;
+        static constexpr GLfloat CLOUD_SIZE              = 0.15f;
         static constexpr GLfloat WEATHER_SIZE            = 5.0f;
-        static constexpr GLfloat WEATHER_HEIGHT          = 5.0f;
+        static constexpr GLfloat WEATHER_HEIGHT          = 0.5f;
     };
 
     struct Sky {
